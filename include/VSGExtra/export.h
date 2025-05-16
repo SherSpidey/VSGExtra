@@ -8,18 +8,18 @@
 #if defined(_WIN32) || defined(_WIN64)
 #   if defined(VSGEXTRA_BUILD_SHARED)
 #       ifdef VSGEXTRA_EXPORTS
-#           define VSGEXTRA_EXPORT   __declspec(dllexport)
+#           define VSGEXTRA_DECLSPEC   __declspec(dllexport)
 #       else
-#           define VSGEXTRA_EXPORT   __declspec(dllimport)
+#           define VSGEXTRA_DECLSPEC   __declspec(dllimport)
 #       endif
 #   else
-#       define VSGEXTRA_EXPORT
+#       define VSGEXTRA_DECLSPEC
 #   endif
 #elif defined(__linux__)
 #   ifdef VSGEXTRA_EXPORTS
-#       define VSGEXTRA_EXPORT   __attribute__((visibility("default")))
+#       define VSGEXTRA_DECLSPEC  __attribute__((visibility("default")))
 #   else
-#       define VSGEXTRA_EXPORT
+#       define VSGEXTRA_DECLSPEC
 #   endif
 #endif
 

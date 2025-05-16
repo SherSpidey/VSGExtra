@@ -9,7 +9,7 @@ message(STATUS "VSGEXTRA v${VSGEXTRA_VERSION}")
 
 project(VSGExtra VERSION ${VSGEXTRA_VERSION})
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 17)
 
 if(MSVC)
     # CMAKE_CXX_STANDARD is not used in some msvc
