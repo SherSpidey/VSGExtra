@@ -9,7 +9,7 @@
 
 namespace VSGExtra
 {
-    class ViewerPawn : public vsg::Inherit<DefaultPawn, ViewerPawn>
+    class VSGEXTRA_DECLSPEC ViewerPawn : public vsg::Inherit<DefaultPawn, ViewerPawn>
     {
     public:
         explicit ViewerPawn(const vsg::ref_ptr<vsg::Camera>& camera);

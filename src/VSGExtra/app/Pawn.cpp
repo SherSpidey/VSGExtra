@@ -171,6 +171,7 @@ dvec2 DefaultPawn::NDC(const PointerEvent& event, bool aspect_fix) const
 
 dvec3 DefaultPawn::TBC(const PointerEvent& event) const
 {
+    // need to patch aspect_fix as we need to get accurate screen shape
     const auto ndc = NDC(event, true);
 
     // get distance to the origin
