@@ -44,6 +44,9 @@ endif()
 find_package(vsg REQUIRED)
 message(STATUS "Found VulkanSceneGraph with version: ${vsg_VERSION}")
 
+# optional package
+find_package(vsgXchange QUIET)
+
 set(BIN_DIR "${CMAKE_CURRENT_BINARY_DIR}/bin" CACHE PATH "Directory for executable and shared libraries")
 set(LIB_DIR "${CMAKE_CURRENT_BINARY_DIR}/lib" CACHE PATH "Directory for static libraries")
 # set output directory
