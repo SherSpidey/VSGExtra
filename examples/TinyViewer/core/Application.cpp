@@ -88,13 +88,14 @@ AppPimpl::AppPimpl()
     // init window traits
     auto window_traits = WindowTraits::create();
     window_traits->windowTitle = "TinyViewer";
-    // window_traits->debugLayer = true;
+    window_traits->debugLayer = true;
 
     window = Window::create(window_traits);
     if (!window)
     {
         throw Exception{"Window creation failed", 1};
     }
+    
     // set window icon
 #ifdef WIN32
     // check win32 native window
@@ -130,12 +131,6 @@ AppPimpl::AppPimpl()
     // create command graph
     command_graph = createCommandGraphForView(window, camera, scene_root);
 
-    // Path filename{"data/models/teapot.vsgt"};
-    // if (auto node = vsg::read_cast<Node>(filename, options))
-    // {
-    //     scene_root->addChild(node);
-    // }
-
     // init viewer
     viewer = Viewer::create();
     viewer->addWindow(window);
@@ -144,6 +139,8 @@ AppPimpl::AppPimpl()
 
     trackball = Trackball::create(camera);
     viewer->addEventHandler(trackball);
+
+    viewer->setupThreading();
 
     viewer->assignRecordAndSubmitTaskAndPresentation({command_graph});
     viewer->compile();
