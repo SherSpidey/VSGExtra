@@ -68,7 +68,7 @@ void Controller::apply(KeyPressEvent& event)
             
             _pimpl->scene_root->addChild(node);
             
-            auto result = _pimpl->viewer->compileManager->compile(_pimpl->scene_root);
+            auto result = _pimpl->viewer->compileManager->compile(node);
             updateViewer(*(_pimpl->viewer), result);
         }
     }
