@@ -22,7 +22,7 @@ using namespace vsg;
 class Controller : public Inherit<Visitor, Controller>
 {
 public:
-    Controller(AppPimpl* pimpl): _pimpl(pimpl)
+    explicit Controller(AppPimpl* pimpl): _pimpl(pimpl)
     {
     }
 
@@ -42,13 +42,15 @@ public:
     ref_ptr<Viewer> viewer;
     ref_ptr<Camera> camera;
 
+    ref_ptr<Trackball> trackball;
+
     ref_ptr<Group> scene_root;
     ref_ptr<CommandGraph> command_graph;
 };
 
 void Controller::apply(KeyPressEvent& event)
 {
-    if (event.keyBase == KEY_a)
+    if (event.keyBase == KEY_Equals)
     {
         Path filename{"data/models/teapot.vsgt"};
         if (auto node = vsg::read_cast<Node>(filename, _pimpl->options))
@@ -58,13 +60,16 @@ void Controller::apply(KeyPressEvent& event)
             dvec3 center = (computeBounds.bounds.min + computeBounds.bounds.max) * 0.5;
             double radius = length(computeBounds.bounds.max - computeBounds.bounds.min) * 0.6;
 
-            _pimpl->camera->viewMatrix = LookAt::create(center + dvec3(0.0, -radius * 3.5, 0.0),
-                                                        center,
-                                                        dvec3(0.0, 0.0, 1.0));
+            auto look_at = LookAt::create(center + dvec3(0.0, -radius * 3.5, 0.0),
+                                            center,
+                                            dvec3(0.0, 0.0, 1.0));
+            *_pimpl->camera->viewMatrix.cast<LookAt>() = *look_at;
+            _pimpl->trackball->addKeyViewpoint(KEY_Space, look_at, 1.0);
             
             _pimpl->scene_root->addChild(node);
-            _pimpl->viewer->deviceWaitIdle();
-            _pimpl->viewer->compile();
+            
+            auto result = _pimpl->viewer->compileManager->compile(_pimpl->scene_root);
+            updateViewer(*(_pimpl->viewer), result);
         }
     }
 }
@@ -83,6 +88,7 @@ AppPimpl::AppPimpl()
     // init window traits
     auto window_traits = WindowTraits::create();
     window_traits->windowTitle = "TinyViewer";
+    // window_traits->debugLayer = true;
 
     window = Window::create(window_traits);
     if (!window)
@@ -135,7 +141,9 @@ AppPimpl::AppPimpl()
     viewer->addWindow(window);
     viewer->addEventHandler(Controller::create(this));
     viewer->addEventHandler(CloseHandler::create(viewer));
-    viewer->addEventHandler(Trackball::create(camera));
+
+    trackball = Trackball::create(camera);
+    viewer->addEventHandler(trackball);
 
     viewer->assignRecordAndSubmitTaskAndPresentation({command_graph});
     viewer->compile();
@@ -157,8 +165,6 @@ Application::Application()
 
 int Application::exec()
 {
-    std::cout << "[Application::exec()]" << '\n';
-    std::cout.flush();
     try
     {
         auto viewer = _m_pimpl->viewer;
