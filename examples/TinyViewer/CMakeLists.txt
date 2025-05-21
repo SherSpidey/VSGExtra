@@ -3,12 +3,16 @@ cmake_minimum_required(VERSION 3.30)
 option(TINY_VIEWER_BUILD_CONSOLE "Build console for TinyViewer" OFF)
 
 # add header files
-file(GLOB HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/core/*.h)
+file(GLOB HEADERS
+        ${CMAKE_CURRENT_SOURCE_DIR}/core/*.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/ui/*.h
+)
 
 # add source files
 set(SOURCES
         core/Application.cpp
         core/main.cpp
+        ui/ImFileDialog.cpp
 )
 
 find_package(vsgImGui REQUIRED)
