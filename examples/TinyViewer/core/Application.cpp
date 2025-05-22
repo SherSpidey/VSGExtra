@@ -172,13 +172,13 @@ AppPimpl::AppPimpl()
     gui_initializer->AddChineseSupport();
 
     // add gui
-    // auto hud = ImHUD::create(ImHUDParams::create(), options);
+    auto hud = ImHUD::create(options);
     
     params = ImFileDialogParams::create();
     auto file_window = ImWindow::create(ImFileDialog::create(params), options);
     
-    auto render_ui = vsgImGui::RenderImGui::create(window, file_window);
-    // render_ui->add(file_window);
+    auto render_ui = vsgImGui::RenderImGui::create(window, hud);
+    render_ui->add(file_window);
 
     // set render graph content
     render_graph->addChild(view);

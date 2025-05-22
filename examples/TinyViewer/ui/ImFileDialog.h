@@ -17,7 +17,7 @@ public:
 class ImFileDialog : public vsg::Inherit<ImWidget, ImFileDialog>
 {
 public:
-    WIDGET_DECLARATION(ImFileDialog)
+    IM_WIDGET_DECLARATION(ImFileDialog)
     
     static void Draw(const vsg::ref_ptr<ImParams>& in_params);
 };

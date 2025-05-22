@@ -7,7 +7,7 @@
 
 #include "ImFileDialog.h"
 
-WIDGET_DEFINITION(ImFileDialog)
+IM_WIDGET_DEFINITION(ImFileDialog)
 
 void ImFileDialog::Draw(const vsg::ref_ptr<ImParams>& in_params)
 {
@@ -53,7 +53,7 @@ void ImFileDialog::Draw(const vsg::ref_ptr<ImParams>& in_params)
                 current_path = entry.second;
             }
         }
-
+        // show file list
         for (const auto& entry : file_set)
         {
             if (ImGui::Selectable(entry.first.c_str()))

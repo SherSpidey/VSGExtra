@@ -9,11 +9,11 @@
 #include <vsg/commands/Command.h>
 #include <vsg/io/Options.h>
 
-#define WIDGET_DECLARATION(ClassName) \
+#define IM_WIDGET_DECLARATION(ClassName) \
     ClassName(const vsg::ref_ptr<ImParams>& in_params);\
     void RecordDraw() override;
 
-#define WIDGET_DEFINITION(ClassName) \
+#define IM_WIDGET_DEFINITION(ClassName) \
 ClassName::ClassName(const vsg::ref_ptr<ImParams>& in_params): Inherit(in_params){}\
 void ClassName::RecordDraw() { \
     ClassName::Draw(params); \
