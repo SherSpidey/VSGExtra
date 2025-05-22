@@ -12,6 +12,10 @@ file(GLOB HEADERS
 set(SOURCES
         core/Application.cpp
         core/main.cpp
+
+        ui/ImInitializer.cpp
+        ui/ImWidget.cpp
+        ui/ImHUD.cpp
         ui/ImFileDialog.cpp
 )
 

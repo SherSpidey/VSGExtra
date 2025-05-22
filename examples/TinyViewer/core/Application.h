@@ -6,7 +6,6 @@
 
 #include <cstdint>
 
-
 /**
  *  Main class to hold vsg window, viewer and options
  */

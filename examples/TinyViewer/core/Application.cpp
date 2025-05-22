@@ -4,12 +4,19 @@
 
 #include <iostream>
 #include <vsg/all.h>
+#include <vsgImGui/RenderImGui.h>
+#include <vsgImGui/SendEventsToImGui.h>
 
 #ifdef vsgXchange_FOUND
 #    include <vsgXchange/all.h>
 #endif
 
-#include "Application.h"
+#include <core/Application.h>
+
+#include <ui/ImFileDialog.h>
+#include <ui/ImInitializer.h>
+
+#include "ui/ImHUD.h"
 
 #ifdef WIN32
 #   include <windows.h>
@@ -42,10 +49,13 @@ public:
     ref_ptr<Viewer> viewer;
     ref_ptr<Camera> camera;
 
-    ref_ptr<Trackball> trackball;
-
+    ref_ptr<ImParams> params;
+    
     ref_ptr<Group> scene_root;
+    ref_ptr<RenderGraph> render_graph;
     ref_ptr<CommandGraph> command_graph;
+    
+    ref_ptr<Trackball> trackball;
 };
 
 void Controller::apply(KeyPressEvent& event)
@@ -69,8 +79,26 @@ void Controller::apply(KeyPressEvent& event)
             _pimpl->scene_root->addChild(node);
             
             auto result = _pimpl->viewer->compileManager->compile(node);
-            updateViewer(*(_pimpl->viewer), result);
+            // updateViewer(*(_pimpl->viewer), result);
         }
+    }
+
+    if (event.keyBase == KEY_Minus)
+    {
+        auto& children = _pimpl->scene_root->children;
+        if (!children.empty())
+        {
+            _pimpl->viewer->deviceWaitIdle();
+            children.erase(children.begin());
+
+            // auto result = _pimpl->viewer->compileManager->compile(_pimpl->scene_root);
+            // updateViewer(*(_pimpl->viewer), result);
+        }
+    }
+
+    if (event.keyBase == KEY_F1)
+    {
+        _pimpl->params->Show();
     }
 }
 
@@ -129,11 +157,37 @@ AppPimpl::AppPimpl()
     scene_root = Group::create();
 
     // create command graph
-    command_graph = createCommandGraphForView(window, camera, scene_root);
+    command_graph = CommandGraph::create(window);
+    render_graph = RenderGraph::create(window);
+    command_graph->addChild(render_graph);
+
+    // create a view with scene_root
+    auto view = View::create(camera);
+    // add a headlight and the scene_root
+    view->addChild(createHeadlight());
+    view->addChild(scene_root);
+
+    // gui init
+    auto gui_initializer = ImInitializer::create(options);
+    gui_initializer->AddChineseSupport();
+
+    // add gui
+    // auto hud = ImHUD::create(ImHUDParams::create(), options);
+    
+    params = ImFileDialogParams::create();
+    auto file_window = ImWindow::create(ImFileDialog::create(params), options);
+    
+    auto render_ui = vsgImGui::RenderImGui::create(window, file_window);
+    // render_ui->add(file_window);
+
+    // set render graph content
+    render_graph->addChild(view);
+    render_graph->addChild(render_ui);
 
     // init viewer
     viewer = Viewer::create();
     viewer->addWindow(window);
+    viewer->addEventHandler(vsgImGui::SendEventsToImGui::create());
     viewer->addEventHandler(Controller::create(this));
     viewer->addEventHandler(CloseHandler::create(viewer));
 
