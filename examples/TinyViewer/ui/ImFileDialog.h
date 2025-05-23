@@ -10,6 +10,12 @@
 class ImFileDialogParams : public vsg::Inherit<ImParams, ImFileDialogParams>
 {
 public:
+    enum  FileDialogStatus : std::uint8_t
+    {
+        Picking = 0,
+        Picked
+    } status;
+    
     std::string selected_path;
 };
 

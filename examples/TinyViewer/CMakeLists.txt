@@ -15,8 +15,9 @@ set(SOURCES
 
         ui/ImInitializer.cpp
         ui/ImWidget.cpp
-        ui/ImHUD.cpp
+        ui/ImButton.cpp
         ui/ImFileDialog.cpp
+        ui/ImHUD.cpp
 )
 
 find_package(vsgImGui REQUIRED)

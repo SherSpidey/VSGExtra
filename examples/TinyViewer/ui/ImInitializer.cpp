@@ -26,6 +26,7 @@ void ImInitializer::AddChineseSupport(const std::string& ttf_font) const
         font = font_file.string();
 
         auto& io = ImGui::GetIO();
+        io.IniFilename = nullptr;
         io.Fonts->AddFontDefault();
 
         ImFontConfig config;

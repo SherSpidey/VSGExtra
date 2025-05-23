@@ -60,29 +60,6 @@ public:
 
 void Controller::apply(KeyPressEvent& event)
 {
-    if (event.keyBase == KEY_Equals)
-    {
-        Path filename{"data/models/teapot.vsgt"};
-        if (auto node = vsg::read_cast<Node>(filename, _pimpl->options))
-        {
-            ComputeBounds computeBounds;
-            node->accept(computeBounds);
-            dvec3 center = (computeBounds.bounds.min + computeBounds.bounds.max) * 0.5;
-            double radius = length(computeBounds.bounds.max - computeBounds.bounds.min) * 0.6;
-
-            auto look_at = LookAt::create(center + dvec3(0.0, -radius * 3.5, 0.0),
-                                            center,
-                                            dvec3(0.0, 0.0, 1.0));
-            *_pimpl->camera->viewMatrix.cast<LookAt>() = *look_at;
-            _pimpl->trackball->addKeyViewpoint(KEY_Space, look_at, 1.0);
-            
-            _pimpl->scene_root->addChild(node);
-            
-            auto result = _pimpl->viewer->compileManager->compile(node);
-            // updateViewer(*(_pimpl->viewer), result);
-        }
-    }
-
     if (event.keyBase == KEY_Minus)
     {
         auto& children = _pimpl->scene_root->children;
@@ -91,14 +68,9 @@ void Controller::apply(KeyPressEvent& event)
             _pimpl->viewer->deviceWaitIdle();
             children.erase(children.begin());
 
-            // auto result = _pimpl->viewer->compileManager->compile(_pimpl->scene_root);
-            // updateViewer(*(_pimpl->viewer), result);
+            auto result = _pimpl->viewer->compileManager->compile(_pimpl->scene_root);
+            updateViewer(*(_pimpl->viewer), result);
         }
-    }
-
-    if (event.keyBase == KEY_F1)
-    {
-        _pimpl->params->Show();
     }
 }
 
@@ -172,7 +144,9 @@ AppPimpl::AppPimpl()
     gui_initializer->AddChineseSupport();
 
     // add gui
-    auto hud = ImHUD::create(options);
+    viewer = Viewer::create();
+    trackball = Trackball::create(camera);
+    auto hud = ImHUD::create(viewer, scene_root, camera, trackball, options);
     
     params = ImFileDialogParams::create();
     auto file_window = ImWindow::create(ImFileDialog::create(params), options);
@@ -185,13 +159,10 @@ AppPimpl::AppPimpl()
     render_graph->addChild(render_ui);
 
     // init viewer
-    viewer = Viewer::create();
     viewer->addWindow(window);
     viewer->addEventHandler(vsgImGui::SendEventsToImGui::create());
     viewer->addEventHandler(Controller::create(this));
     viewer->addEventHandler(CloseHandler::create(viewer));
-
-    trackball = Trackball::create(camera);
     viewer->addEventHandler(trackball);
 
     viewer->setupThreading();

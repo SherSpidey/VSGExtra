@@ -17,6 +17,8 @@ void ImFileDialog::Draw(const vsg::ref_ptr<ImParams>& in_params)
         if (!_params)
             return;
 
+        _params->status = ImFileDialogParams::Picking;
+
         static std::string current_path = std::filesystem::current_path().u8string();
 
         ImGui::Begin("File Dialog", &_params->show);
@@ -60,6 +62,7 @@ void ImFileDialog::Draw(const vsg::ref_ptr<ImParams>& in_params)
             {
                 _params->selected_path = entry.second;
                 _params->show = false;
+                _params->status = ImFileDialogParams::Picked;
             }
         }
 

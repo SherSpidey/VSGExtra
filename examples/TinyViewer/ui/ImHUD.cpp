@@ -2,80 +2,86 @@
 // Created by ParadoxFang on 2025/5/22.
 //
 
-#include <vsgImGui/imgui.h>
+#include <iostream>
+#include <ui/ImFileDialog.h>
+#include <ui/ImButton.h>
 
 #include "ImHUD.h"
 
-#include <iostream>
+using namespace vsg;
 
-// void ImHUD::record(vsg::CommandBuffer& commandBuffer) const
-// {
-//     // set hud flag
-//     ImGuiWindowFlags window_flags =
-//         ImGuiWindowFlags_NoDecoration |
-//         ImGuiWindowFlags_NoMove |
-//         ImGuiWindowFlags_AlwaysAutoResize |
-//         ImGuiWindowFlags_NoNav |
-//         ImGuiWindowFlags_NoBringToFrontOnFocus |
-//         ImGuiWindowFlags_NoFocusOnAppearing |
-//         ImGuiWindowFlags_NoBackground;
-//
-//     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f)); // remove padding
-//     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f); // remove boarder
-//
-//     // begin daw
-//     if (ImGui::Begin("HUD", nullptr, window_flags))
-//     {
-//         ImGui::SetWindowPos(ImVec2(10, 10));
-//
-//         // add open file button
-//         if (ImGui::Button("Open"))
-//         {
-//             std::cout << "clicked!" << "\n";
-//             std::cout.flush();
-//         }
-//
-//         ImGui::End();
-//     }
-//
-//     // resume ImGUI style
-//     ImGui::PopStyleVar(2);
-// }
-ImHUD::ImHUD(const vsg::ref_ptr<vsg::Options>& options) : _options(options)
+ImHUD::ImHUD(
+    const ref_ptr<Viewer>& viewer,
+    const ref_ptr<Group>& root,
+    const ref_ptr<Camera>& camera,
+    const ref_ptr<Trackball>& trackball,
+    const ref_ptr<Options>& options
+):
+    _viewer(viewer),
+    _root(root),
+    _camera(camera),
+    _trackball(trackball),
+    _options(options)
 {
-    
+    Init();
 }
 
-void ImHUD::record(vsg::CommandBuffer& commandBuffer) const
+void ImHUD::record(CommandBuffer& commandBuffer) const
 {
-    // set hud flag
-    ImGuiWindowFlags window_flags =
-        ImGuiWindowFlags_NoDecoration |
-        ImGuiWindowFlags_NoMove |
-        ImGuiWindowFlags_AlwaysAutoResize |
-        ImGuiWindowFlags_NoNav |
-        ImGuiWindowFlags_NoBringToFrontOnFocus |
-        ImGuiWindowFlags_NoFocusOnAppearing |
-        ImGuiWindowFlags_NoBackground;
-    
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f)); // remove padding
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f); // remove boarder
-    
-    // begin daw
-    if (ImGui::Begin("HUD", nullptr, window_flags))
+    for (const auto& widget : _widgets)
     {
-        ImGui::SetWindowPos(ImVec2(10, 10));
-    
-        // add open file button
-        if (ImGui::Button("Open"))
-        {
-            std::cout << "clicked!" << "\n";
-            std::cout.flush();
-        }
-    
-        ImGui::End();
+        widget->RecordDraw();
     }
-    
-    // resume ImGUI style
-    ImGui::PopStyleVar(2);
+}
+
+void ImHUD::Init()
+{
+    auto model_button_params = ImButtonParams::create();
+    model_button_params->Show();
+    model_button_params->position = {10, 10};
+    model_button_params->text = "Open";
+
+    auto file_dialog_params = ImFileDialogParams::create();
+    model_button_params->active = [file_dialog_params]
+    {
+        file_dialog_params->Show();
+    };
+    model_button_params->execute = [this, file_dialog_params]
+    {
+        ImFileDialog::Draw(file_dialog_params);
+        if (file_dialog_params->status == ImFileDialogParams::Picked)
+        {
+            // import !!!
+            file_dialog_params->status = ImFileDialogParams::Picking;
+
+            // open model
+            OpenModel(file_dialog_params->selected_path.c_str());
+        }
+    };
+
+    auto model_button = ImButton::create(model_button_params);
+    _widgets.emplace_back(model_button);
+}
+
+void ImHUD::OpenModel(const char* path) const
+{
+    Path filename(path);
+    if (auto node = vsg::read_cast<Node>(filename, _options))
+    {
+        // ComputeBounds computeBounds;
+        // node->accept(computeBounds);
+        // dvec3 center = (computeBounds.bounds.min + computeBounds.bounds.max) * 0.5;
+        // double radius = length(computeBounds.bounds.max - computeBounds.bounds.min) * 0.6;
+        //
+        // auto look_at = LookAt::create(center + dvec3(0.0, -radius * 3.5, 0.0),
+        //                               center,
+        //                               dvec3(0.0, 0.0, 1.0));
+        // *_camera->viewMatrix.cast<LookAt>() = *look_at;
+        // _trackball->addKeyViewpoint(KEY_Space, look_at, 1.0);
+
+        _root->addChild(node);
+
+        auto result = _viewer->compileManager->compile(node);
+        updateViewer(*_viewer, result);
+    }
 }
