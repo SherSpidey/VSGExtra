@@ -10,7 +10,7 @@
 #include <vsg/io/Options.h>
 
 #define IM_WIDGET_DECLARATION(ClassName) \
-    ClassName(const vsg::ref_ptr<ImParams>& in_params);\
+    explicit ClassName(const vsg::ref_ptr<ImParams>& in_params);\
     void RecordDraw() override;
 
 #define IM_WIDGET_DEFINITION(ClassName) \
