@@ -11,6 +11,7 @@ file(GLOB HEADERS
 # add source files
 set(SOURCES
         core/Application.cpp
+        core/VSGApplication.cpp
         core/main.cpp
 
         ui/ImInitializer.cpp
