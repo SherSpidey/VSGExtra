@@ -21,11 +21,11 @@ namespace VSGExtra
     public:
         Pawn();
 
-        /***** control *****/
+        // control object
         virtual void PossessedBy(const vsg::ref_ptr<Object>& target) = 0;
+        // release control
         virtual void UnPossessed() = 0;
-        /***** control *****/
-
+        
     protected:
         // pawn position
         vsg::dvec3 position_;
@@ -37,30 +37,26 @@ namespace VSGExtra
         double pitch_, yaw_, roll_;
 
     public:
-        /***** input *****/
         // vsg style: all input callback come from apply function
+        // used to record key state
         void apply(vsg::KeyPressEvent&) override;
         void apply(vsg::KeyReleaseEvent&) override;
         void apply(vsg::FocusInEvent&) override;
         void apply(vsg::FocusOutEvent&) override;
-        /***** input *****/
 
     protected:
         // record all input key state info
         vsg::ref_ptr<vsg::Keyboard> keyboard_;
 
     public:
-        /***** movement *****/
+        // dynamic states change
         void AddMovementInput(const vsg::dvec3& dir, double scale = 1.0f);
         void AddPitchInput(double val);
         void AddYawInput(double val);
         void AddRollInput(double val);
-        /***** movement *****/
 
-
-        /***** camera *****/
+        // zoom viewport
         virtual void Zoom(double ratio, const vsg::dvec3& base = {});
-        /***** camera *****/
     };
 }
 
