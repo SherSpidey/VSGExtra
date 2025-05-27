@@ -5,7 +5,7 @@
 #ifndef VIEWERPAWN_H
 #define VIEWERPAWN_H
 
-#include <VSGExtra/app/Pawn.h>
+#include <VSGExtra/app/DefaultPawn.h>
 
 namespace VSGExtra
 {
@@ -13,6 +13,11 @@ namespace VSGExtra
     {
     public:
         explicit ViewerPawn(const vsg::ref_ptr<vsg::Camera>& camera);
+
+
+    protected:
+        // get trackball coordinates
+        vsg::dvec3 TBC(const vsg::PointerEvent& event) const;
     };
 }
 

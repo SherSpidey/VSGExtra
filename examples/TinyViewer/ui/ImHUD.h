@@ -4,10 +4,10 @@
 #ifndef IMHUD_H
 #define IMHUD_H
 
-#include <ui/ImWidget.h>
+#include <vsg/core/ref_ptr.h>
+#include <vsg/commands/Command.h>
 
-#include <vsg/all.h>
-
+class VSGApplication;
 
 /**
  *  Main HUD used
@@ -15,26 +15,15 @@
 class ImHUD : public vsg::Inherit<vsg::Command, ImHUD>
 {
 public:
-   ImHUD(
-      const vsg::ref_ptr<vsg::Viewer>& viewer,
-      const vsg::ref_ptr<vsg::Group>& root,
-      const vsg::ref_ptr<vsg::Camera>& camera,
-      const vsg::ref_ptr<vsg::Trackball>& trackball,
-      const vsg::ref_ptr<vsg::Options>& options = {});
-   void record(vsg::CommandBuffer& commandBuffer) const override;
+    explicit ImHUD(VSGApplication* app);
+    void record(vsg::CommandBuffer& commandBuffer) const override;
 
 protected:
-   void Init();
-
-   void OpenModel(const char*) const;
+    void Init();
 
 private:
-   vsg::ref_ptr<vsg::Viewer> _viewer;
-   vsg::ref_ptr<vsg::Group> _root;
-   vsg::ref_ptr<vsg::Camera> _camera;
-   vsg::ref_ptr<vsg::Trackball> _trackball;
-   vsg::ref_ptr<vsg::Options> _options;
-   std::vector<vsg::ref_ptr<ImWidget>> _widgets;
+    VSGApplication* _app;
+    std::vector<vsg::ref_ptr<class ImWidget>> _widgets;
 };
 
 

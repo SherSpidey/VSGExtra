@@ -11,7 +11,7 @@
  */
 class Application {
 public:
-    enum exit_code : std::uint8_t
+    enum ExitCode : std::uint8_t
     {
         SUCCESS = 0,
         ERROR_VSG_FAILED = 1,
@@ -23,8 +23,8 @@ public:
     int exec();
 
 private:
-    exit_code _result {};
-    class AppPimpl* _m_pimpl;
+    ExitCode _result {};
+    class VSGApplication* _vsg_app;
 };
 
 
