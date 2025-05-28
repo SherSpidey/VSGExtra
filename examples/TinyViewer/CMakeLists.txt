@@ -31,11 +31,11 @@ target_include_directories(TinyViewer
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
 )
 
-target_link_libraries(TinyViewer vsg::vsg vsgImGui::vsgImGui)
+target_link_libraries(TinyViewer PRIVATE vsg::vsg vsgImGui::vsgImGui VSGExtra::VSGExtra)
 
 if (vsgXchange_FOUND)
     target_compile_definitions(TinyViewer PRIVATE vsgXchange_FOUND)
-    target_link_libraries(TinyViewer vsgXchange::vsgXchange)
+    target_link_libraries(TinyViewer PRIVATE vsgXchange::vsgXchange)
 endif()
 
 # add resources

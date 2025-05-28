@@ -10,6 +10,7 @@
 #include <vsg/ui/Keyboard.h>
 
 #include <VSGExtra/export.h>
+#include <VSGExtra/ui/KeyboardRegistry.h>
 
 namespace VSGExtra
 {
@@ -25,7 +26,7 @@ namespace VSGExtra
         virtual void PossessedBy(const vsg::ref_ptr<Object>& target) = 0;
         // release control
         virtual void UnPossessed() = 0;
-        
+
     protected:
         // pawn position
         vsg::dvec3 position_;
@@ -47,6 +48,7 @@ namespace VSGExtra
     protected:
         // record all input key state info
         vsg::ref_ptr<vsg::Keyboard> keyboard_;
+        vsg::ref_ptr<KeyboardRegistry> keyboard_registry_;
 
     public:
         // dynamic states change
@@ -55,8 +57,12 @@ namespace VSGExtra
         void AddYawInput(double val);
         void AddRollInput(double val);
 
+    protected:
+        // update info using pawn attitude
+        void Update();
+
         // zoom viewport
-        virtual void Zoom(double ratio, const vsg::dvec3& base = {});
+        virtual void Zoom(double ratio, const vsg::dvec3& base);
     };
 }
 

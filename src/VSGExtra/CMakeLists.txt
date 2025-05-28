@@ -7,6 +7,8 @@ file(GLOB HEADERS ${CMAKE_SOURCE_DIR}/include/VSGExtra/*.h ${CMAKE_SOURCE_DIR}/i
 
 # add source files explicitly
 set(SOURCES
+        ui/KeyboardRegistry.cpp
+
         app/Pawn.cpp
         app/DefaultPawn.cpp
         app/ViewerPawn.cpp

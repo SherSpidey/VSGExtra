@@ -19,6 +19,9 @@
 #   include <resources/resources.h>
 #endif
 
+// test
+#include <VSGExtra/app/ViewerPawn.h>
+
 #include "VSGApplication.h"
 
 using namespace vsg;
@@ -92,7 +95,7 @@ VSGApplication::VSGAppPImpl::VSGAppPImpl(VSGApplication* owner) : _owner(owner)
     auto look_at = LookAt::create(center + dvec3(0, -1, 0) * focal_distance,
                                   center, dvec3(0, 0, 1));
     auto camera = Camera::create(perspective, look_at, ViewportState::create(window->extent2D()));
-
+    
     // create scene root
     scene_root = Group::create();
 
@@ -125,10 +128,16 @@ VSGApplication::VSGAppPImpl::VSGAppPImpl(VSGApplication* owner) : _owner(owner)
     // create pawn
     pawn = Trackball::create(camera);
 
+    /*=========================  TEST  ==============================*/
+    auto test_pawn = VSGExtra::ViewerPawn::create(camera);
+    test_pawn->AddKeyViewpoint(KEY_1, LookAt::create(dvec3{0, 0, 14}, dvec3{0, 0, 0}, dvec3{0, 1, 0}), 0.5);
+    /*=========================  TEST  ==============================*/
+
     viewer->addWindow(window);
     viewer->addEventHandler(vsgImGui::SendEventsToImGui::create());
     viewer->addEventHandler(CloseHandler::create(viewer));
-    viewer->addEventHandler(pawn);
+    // viewer->addEventHandler(pawn);
+    viewer->addEventHandler(test_pawn);
 
     viewer->setupThreading();
 
