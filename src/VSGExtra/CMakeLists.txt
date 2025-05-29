@@ -7,6 +7,8 @@ file(GLOB HEADERS ${CMAKE_SOURCE_DIR}/include/VSGExtra/*.h ${CMAKE_SOURCE_DIR}/i
 
 # add source files explicitly
 set(SOURCES
+        math/spatial.cpp
+
         ui/KeyboardRegistry.cpp
 
         app/Pawn.cpp

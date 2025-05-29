@@ -5,6 +5,8 @@
 #include <vsg/ui/PointerEvent.h>
 #include <vsg/ui/ScrollWheelEvent.h>
 
+#include <VSGExtra/math/spatial.h>
+
 #include <VSGExtra/app/ViewerPawn.h>
 
 using namespace vsg;
@@ -190,28 +192,25 @@ void ViewerPawn::Pan(const dvec2& delta) const
     auto inv_projection = inverse(projection);
     auto inv_view = inverse(view);
 
-    // vulkan use [0, 1] for ndc z instead of [-1, 1] in opengl
-    auto clip_near_pos = dvec4(ndc.x, ndc.y, 0, 1);
-    auto clip_near_pos_pre = dvec4(pre_ndc.x, pre_ndc.y, 0, 1);
-    
-    auto view_near_pos = inv_projection * clip_near_pos;
-    auto view_near_pos_pre = inv_projection * clip_near_pos_pre;
+    // a little fast by using 'ScreenToWorldInternal'
+    auto world_pos = ScreenToWorldInternal(ndc, inv_projection, inv_view,
+                                           look_at->eye, look_at->center);
+    auto world_pos_pre = ScreenToWorldInternal(pre_ndc, inv_projection, inv_view,
+                                               look_at->eye, look_at->center);
 
     if (camera_type_ == PERSPECTIVE)
     {
-        // perspective camera requires homogeneous division to obtain correct 3D coordinates
-        view_near_pos /= view_near_pos.w;
-        view_near_pos_pre /= view_near_pos_pre.w;
+        if (intersect_.set)
+        {
+            auto pre_ray_dir = world_pos_pre - look_at->eye;
+            auto pre_intersect_dir = intersect_.point - look_at->eye;
+            auto ray_dir = world_pos - look_at->eye;
 
-        auto ray_dir = normalize(inv_view * dvec4(view_near_pos.xyz, 0).xyz);
-        auto ray_dir_pre = normalize(inv_view * dvec4(view_near_pos_pre.xyz, 0).xyz);
-
-        auto look_dir = normalize(look_at->center - look_at->eye);
-        auto t1 = dot(look_at->center - look_at->eye, look_dir) / dot(ray_dir, look_dir);
-        auto world_pos = look_at->eye + ray_dir * t1;
-        
-        auto t2 = dot(look_at->center - look_at->eye, look_dir) / dot(ray_dir_pre, look_dir);
-        auto world_pos_pre = look_at->eye + ray_dir_pre * t2;
+            auto intersect_dir = ray_dir * (length(pre_intersect_dir) / length(pre_ray_dir));
+            
+            world_pos = intersect_dir + look_at->eye;
+            world_pos_pre = intersect_.point;
+        }
         
         auto movement = world_pos - world_pos_pre;
         auto translation = translate(-movement);
@@ -233,7 +232,7 @@ void ViewerPawn::Zoom(double ratio, const dvec2& base)
     // vulkan use [0, 1] for ndc z instead of [-1, 1] in opengl
     auto clip_near_pos = dvec4(base.x, base.y, 0, 1);
     auto view_near_pos = inv_projection * clip_near_pos;
-    
+
     if (camera_type_ == ORTHOGRAPHIC)
     {
         auto orthographic = camera_->projectionMatrix.cast<Orthographic>();
@@ -264,10 +263,10 @@ void ViewerPawn::Zoom(double ratio, const dvec2& base)
         auto view_width = view_height * aspect_ratio;
 
         // update projection
-        orthographic->left = -view_width/2.0;
-        orthographic->right = view_width/2.0;
-        orthographic->bottom = -view_height/2.0;
-        orthographic->top = view_height/2.0;
+        orthographic->left = -view_width / 2.0;
+        orthographic->right = view_width / 2.0;
+        orthographic->bottom = -view_height / 2.0;
+        orthographic->top = view_height / 2.0;
 
         // perform update
         look_at->transform(translation);
@@ -277,7 +276,7 @@ void ViewerPawn::Zoom(double ratio, const dvec2& base)
     {
         // perspective camera requires homogeneous division to obtain correct 3D coordinates
         view_near_pos /= view_near_pos.w;
-        
+
         // with w = 0, we ensure that only rotation and scaling (which is generally 1 in view space) are applied.
         // so camera is still in {0, 0, 0}
         auto ray_dir = normalize(inv_view * dvec4(view_near_pos.xyz, 0).xyz);
