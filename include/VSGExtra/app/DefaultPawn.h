@@ -10,7 +10,12 @@
 namespace VSGExtra
 {
     /**
-     * Base class used to directly control camera
+     * Base class for direct camera control.
+     * Manages fundamental camera parameters and viewport states without enforcing strict control.
+     * 
+     * IMPORTANT: Since this class modifies camera values directly,
+     * external references to the projection or view matrix should be carefully managed 
+     * to avoid inconsistencies.
      */
     class VSGEXTRA_DECLSPEC DefaultPawn : public vsg::Inherit<Pawn, DefaultPawn>
     {
@@ -50,7 +55,7 @@ namespace VSGExtra
         std::pair<int32_t, int32_t> CameraRenderAreaCoordinates(const vsg::PointerEvent& event) const;
         // whether point event is within render area
         bool WithinRenderArea(const vsg::PointerEvent& event) const;
-        // is the event is relevant with the preserved window
+        // checks if the event is related to the preserved window
         bool EventRelevant(const vsg::WindowEvent& event) const;
 
     public:
@@ -86,13 +91,12 @@ namespace VSGExtra
 
         // preserved windows and corresponding offsets
         std::map<vsg::observer_ptr<vsg::Window>, vsg::ivec2> window_offsets;
-        /// container that maps key symbol bindings with the Viewpoint
-        /// that should move the LookAt to when pressed.
+        // maps key symbols to viewpoints that should be activated when pressed
         std::map<vsg::KeySymbol, Viewpoint> key_viewpoint_map;
 
         // get NDC, e.g. [-1, 1]
-        // with aspect_fix equals to true will get a non [-1, 1] coords
-        // which can only used in 2d screen space like trackball coordinates
+        // if aspect_fix is true, returns non [-1, 1] coordinates,
+        // which can only be used in 2d screen space like trackball coordinates
         vsg::dvec2 NDC(const vsg::PointerEvent& event, bool aspect_fix = false) const;
     };
 }

@@ -95,7 +95,7 @@ void Pawn::Update()
     right_.z = cp * sr;
 }
 
-void Pawn::Zoom(double ratio, const dvec3& base)
+void Pawn::Zoom(double ratio, const vsg::dvec2& base)
 {
     // do nothing in base class
 }

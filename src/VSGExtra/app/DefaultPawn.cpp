@@ -216,8 +216,8 @@ dvec2 DefaultPawn::NDC(const PointerEvent& event, bool aspect_fix) const
     const auto [x, y] = CameraRenderAreaCoordinates(event);
 
     const auto aspect_ratio = static_cast<double>(extent.width) / static_cast<double>(extent.height);
-    const auto scale_x = (aspect_fix || extent.width > extent.height) ? 1.0 : aspect_ratio;
-    const auto scale_y = (aspect_fix || extent.height > extent.width) ? 1.0 : 1.0 / aspect_ratio;
+    const auto scale_x = (!aspect_fix || extent.width > extent.height) ? 1.0 : aspect_ratio;
+    const auto scale_y = (!aspect_fix || extent.height > extent.width) ? 1.0 : 1.0 / aspect_ratio;
 
     auto ndc_x = extent.width > 0
                      ? (static_cast<double>(x - offset.x) / static_cast<double>(extent.width) * 2.0 - 1.0) * scale_x

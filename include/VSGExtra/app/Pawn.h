@@ -15,16 +15,23 @@
 namespace VSGExtra
 {
     /**
-     *  Base class for controlling
+     * Base class for controllable entities.
+     * 
+     * Provides fundamental movement, rotation, and interaction capabilities, making it suitable for cameras,
+     * characters, and other interactive objects. This class handles input events and maintains object state, 
+     * including position, direction, and orientation.
+     * 
+     * NOTE:
+     * - Subclasses must implement control-specific logic to define behavior.
      */
     class VSGEXTRA_DECLSPEC Pawn : public vsg::Inherit<vsg::Visitor, Pawn>
     {
     public:
         Pawn();
 
-        // control object
+        // controls the assigned object instance
         virtual void PossessedBy(const vsg::ref_ptr<Object>& target) = 0;
-        // release control
+        // releases control of the currently possessed object
         virtual void UnPossessed() = 0;
 
     protected:
@@ -38,31 +45,31 @@ namespace VSGExtra
         double pitch_, yaw_, roll_;
 
     public:
-        // vsg style: all input callback come from apply function
-        // used to record key state
+        // vsg-style: All input callbacks are handled through the apply function
+        // stores key state information
         void apply(vsg::KeyPressEvent&) override;
         void apply(vsg::KeyReleaseEvent&) override;
         void apply(vsg::FocusInEvent&) override;
         void apply(vsg::FocusOutEvent&) override;
 
     protected:
-        // record all input key state info
+        // tracks all key input states
         vsg::ref_ptr<vsg::Keyboard> keyboard_;
         vsg::ref_ptr<KeyboardRegistry> keyboard_registry_;
 
     public:
-        // dynamic states change
+        // handles dynamic state changes
         void AddMovementInput(const vsg::dvec3& dir, double scale = 1.0f);
         void AddPitchInput(double val);
         void AddYawInput(double val);
         void AddRollInput(double val);
 
     protected:
-        // update info using pawn attitude
+        // updates movement and rotation based on pawn attitude
         void Update();
 
-        // zoom viewport
-        virtual void Zoom(double ratio, const vsg::dvec3& base);
+        // adjusts viewport zoom level
+        virtual void Zoom(double ratio, const vsg::dvec2& base);
     };
 }
 

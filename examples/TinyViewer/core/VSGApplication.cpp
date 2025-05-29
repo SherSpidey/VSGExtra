@@ -22,25 +22,26 @@
 // test
 #include <VSGExtra/app/ViewerPawn.h>
 
-#include "VSGApplication.h"
+#include <core/VSGApplication.h>
 
 using namespace vsg;
+using namespace VSGExtra;
 
 class VSGApplication::VSGAppPImpl
 {
 public:
     VSGAppPImpl(VSGApplication* owner);
-    
+
     ref_ptr<Options> options;
     ref_ptr<Window> window;
     ref_ptr<Viewer> viewer;
-    
+
     ref_ptr<Group> scene_root;
     ref_ptr<RenderGraph> render_graph;
     ref_ptr<CommandGraph> command_graph;
 
-    ref_ptr<Trackball> pawn;
-    
+    ref_ptr<DefaultPawn> pawn;
+
 private:
     VSGApplication* _owner;
 };
@@ -66,7 +67,7 @@ VSGApplication::VSGAppPImpl::VSGAppPImpl(VSGApplication* owner) : _owner(owner)
     {
         throw Exception{"Window creation failed", 1};
     }
-    
+
     // set window icon
 #ifdef WIN32
     // check win32 native window
@@ -95,7 +96,7 @@ VSGApplication::VSGAppPImpl::VSGAppPImpl(VSGApplication* owner) : _owner(owner)
     auto look_at = LookAt::create(center + dvec3(0, -1, 0) * focal_distance,
                                   center, dvec3(0, 0, 1));
     auto camera = Camera::create(perspective, look_at, ViewportState::create(window->extent2D()));
-    
+
     // create scene root
     scene_root = Group::create();
 
@@ -124,20 +125,18 @@ VSGApplication::VSGAppPImpl::VSGAppPImpl(VSGApplication* owner) : _owner(owner)
 
     // init viewer
     viewer = Viewer::create();
-    
+
     // create pawn
-    pawn = Trackball::create(camera);
+    pawn = ViewerPawn::create(camera);
 
     /*=========================  TEST  ==============================*/
-    auto test_pawn = VSGExtra::ViewerPawn::create(camera);
-    test_pawn->AddKeyViewpoint(KEY_1, LookAt::create(dvec3{0, 0, 14}, dvec3{0, 0, 0}, dvec3{0, 1, 0}), 0.5);
+    pawn->AddKeyViewpoint(KEY_1, LookAt::create(dvec3{0, 0, 14}, dvec3{0, 0, 0}, dvec3{0, 1, 0}), 0.5);
     /*=========================  TEST  ==============================*/
 
     viewer->addWindow(window);
     viewer->addEventHandler(vsgImGui::SendEventsToImGui::create());
     viewer->addEventHandler(CloseHandler::create(viewer));
-    // viewer->addEventHandler(pawn);
-    viewer->addEventHandler(test_pawn);
+    viewer->addEventHandler(pawn);
 
     viewer->setupThreading();
 
@@ -159,7 +158,7 @@ int VSGApplication::RenderLoop() const
 {
     auto viewer = _m_pimpl->viewer;
     if (!viewer)
-         return 1;
+        return 1;
 
     while (viewer->advanceToNextFrame())
     {
