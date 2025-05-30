@@ -41,6 +41,9 @@ namespace VSGExtra
     public:
         // core functions
         using Inherit::apply;
+
+        void apply(vsg::KeyPressEvent&) override;
+        
         void apply(vsg::ButtonPressEvent&) override;
         void apply(vsg::ButtonReleaseEvent&) override;
         void apply(vsg::MoveEvent&) override;
@@ -87,6 +90,9 @@ namespace VSGExtra
 
         // override zoom function 
         void Zoom(double ratio, const vsg::dvec2& base) override;
+
+        // toggle camera type from perspective to orthographic
+        void ToggleCamera();
     };
 }
 

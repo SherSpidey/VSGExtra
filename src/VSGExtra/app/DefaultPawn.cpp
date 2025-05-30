@@ -33,6 +33,11 @@ void DefaultPawn::UnPossessed()
     camera_ = nullptr;
 }
 
+DefaultPawn::CameraType DefaultPawn::get_camera_type() const
+{
+    return camera_type_;
+}
+
 void DefaultPawn::CheckCameraType()
 {
     const auto& camera_info = camera_->projectionMatrix->type_info();

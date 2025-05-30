@@ -26,6 +26,15 @@ namespace VSGExtra
             double duration = 0.0;
         };
 
+        enum CameraType : std::uint8_t
+        {
+            ORTHOGRAPHIC = 0,
+            PERSPECTIVE,
+            RELATIVE_PROJECTION,
+            ELLIPSOID_PERSPECTIVE,
+            UNKNOWN,
+        };
+
         // must be created with a camera
         DefaultPawn() = delete;
         explicit DefaultPawn(const vsg::ref_ptr<vsg::Camera>& camera);
@@ -36,16 +45,11 @@ namespace VSGExtra
         // AND YOU SHOULD NOT NEED TO USE THIS FUNCTION WITHIN DEFAULT PAWN!
         void UnPossessed() override;
 
+        CameraType get_camera_type() const;
+
     protected:
-        enum CameraType : std::uint8_t
-        {
-            ORTHOGRAPHIC = 0,
-            PERSPECTIVE,
-            RELATIVE_PROJECTION,
-            ELLIPSOID_PERSPECTIVE,
-            UNKNOWN,
-        } camera_type_;
-        
+        CameraType camera_type_;
+
         // possessed camera
         vsg::ref_ptr<vsg::Camera> camera_;
 

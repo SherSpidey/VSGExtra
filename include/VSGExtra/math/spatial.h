@@ -39,7 +39,7 @@ namespace VSGExtra
         const vsg::t_vec3<T>& eye,
         const vsg::t_vec3<T>& center)
     {
-        bool ortho = std::abs(inv_projection[3][2]) < T(1e-6);
+        bool ortho = std::abs(inv_projection[2][3]) < T(1e-6);
 
         // plane we get the target point
         auto focal_dir = center - eye;
@@ -55,7 +55,7 @@ namespace VSGExtra
 
             // with w = 0, we ensure that only rotation and scaling (which is generally 1 in view space) are applied.
             // so camera is still in {0, 0, 0}
-            auto ray_dir = vsg::normalize(inv_view * vsg::t_vec4<T>(view_near_pos.xyz, 0).xyz);
+            auto ray_dir = vsg::normalize((inv_view * vsg::t_vec4<T>(view_near_pos.xyz, 0)).xyz);
 
             // standard ray-plane intersection scale
             auto forward = vsg::normalize(focal_dir);

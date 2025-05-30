@@ -89,7 +89,7 @@ VSGApplication::VSGAppPImpl::VSGAppPImpl(VSGApplication* owner) : _owner(owner)
     auto aspect_ratio = static_cast<float>(width) / static_cast<float>(height);
     // perspective matrix
     // using unity default camera setting
-    auto perspective = Perspective::create(60, aspect_ratio, 0.3f, 1000.0f);
+    auto perspective = Perspective::create(60, aspect_ratio, 0.03, 1000);
     // look-at matrix
     dvec3 center{};
     double focal_distance = 10.;

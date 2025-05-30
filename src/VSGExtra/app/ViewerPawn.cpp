@@ -25,6 +25,14 @@ ViewerPawn::ViewerPawnState ViewerPawn::get_pawn_state() const
     return pawn_state_;
 }
 
+void ViewerPawn::apply(KeyPressEvent& key_press_event)
+{
+    Inherit::apply(key_press_event);
+
+    if (key_press_event.keyBase == KEY_T || key_press_event.keyBase == KEY_t)
+        ToggleCamera();
+}
+
 void ViewerPawn::apply(ButtonPressEvent& button_press_event)
 {
     Inherit::apply(button_press_event);
@@ -153,7 +161,7 @@ dvec3 ViewerPawn::TBC(const PointerEvent& event) const
     return {ndc.x, -ndc.y, 0};
 }
 
-void ViewerPawn::SetIntersectionPoint(const vsg::dvec3& point)
+void ViewerPawn::SetIntersectionPoint(const dvec3& point)
 {
     intersect_.point = point;
     intersect_.set = true;
@@ -198,25 +206,24 @@ void ViewerPawn::Pan(const dvec2& delta) const
     auto world_pos_pre = ScreenToWorldInternal(pre_ndc, inv_projection, inv_view,
                                                look_at->eye, look_at->center);
 
-    if (camera_type_ == PERSPECTIVE)
+    // TODO: not tested yet
+    if (camera_type_ == PERSPECTIVE && intersect_.set)
     {
-        if (intersect_.set)
-        {
-            auto pre_ray_dir = world_pos_pre - look_at->eye;
-            auto pre_intersect_dir = intersect_.point - look_at->eye;
-            auto ray_dir = world_pos - look_at->eye;
+        auto pre_ray_dir = world_pos_pre - look_at->eye;
+        auto pre_intersect_dir = intersect_.point - look_at->eye;
+        auto ray_dir = world_pos - look_at->eye;
 
-            auto intersect_dir = ray_dir * (length(pre_intersect_dir) / length(pre_ray_dir));
-            
-            world_pos = intersect_dir + look_at->eye;
-            world_pos_pre = intersect_.point;
-        }
-        
-        auto movement = world_pos - world_pos_pre;
-        auto translation = translate(-movement);
+        auto intersect_dir = ray_dir * (length(pre_intersect_dir) / length(pre_ray_dir));
 
-        look_at->transform(translation);
+        world_pos = intersect_dir + look_at->eye;
+        world_pos_pre = intersect_.point;
     }
+
+    auto movement = world_pos - world_pos_pre;
+    auto translation = translate(-movement);
+
+    // perform update
+    look_at->transform(translation);
 }
 
 void ViewerPawn::Zoom(double ratio, const dvec2& base)
@@ -238,9 +245,10 @@ void ViewerPawn::Zoom(double ratio, const dvec2& base)
         auto orthographic = camera_->projectionMatrix.cast<Orthographic>();
 
         // TODO: this should be a class member
-        auto factor = ratio > 0 ? 1.2 : 1 / 1.2;
+        auto factor = ratio < 0 ? 1.2 : 1 / 1.2;
 
         auto view_height = abs(orthographic->top - orthographic->bottom);
+        
         auto pre_height = view_height;
         view_height *= factor;
 
@@ -252,10 +260,10 @@ void ViewerPawn::Zoom(double ratio, const dvec2& base)
         auto view_offset = dvec3(view_near_pos.x, view_near_pos.y, 0);
         // with w = 0, we ensure that only rotation and scaling (which is generally 1 in view space) are applied.
         // so camera is still in {0, 0, 0}
-        auto world_offset = inv_view * dvec4(view_offset, 0).xyz;
+        auto world_offset = (inv_view * dvec4(view_offset, 0)).xyz;
 
         // with world_offset, we can calculate the camera's adjust translation
-        auto translation = translate(world_offset * (1 - 1 / real_factor));
+        auto translation = translate(world_offset * (1 - real_factor));
 
         // calculate new viewport width
         auto viewport = camera_->getViewport();
@@ -271,20 +279,64 @@ void ViewerPawn::Zoom(double ratio, const dvec2& base)
         // perform update
         look_at->transform(translation);
     }
-
-    if (camera_type_ == PERSPECTIVE)
+    else if (camera_type_ == PERSPECTIVE)
     {
         // perspective camera requires homogeneous division to obtain correct 3D coordinates
         view_near_pos /= view_near_pos.w;
 
         // with w = 0, we ensure that only rotation and scaling (which is generally 1 in view space) are applied.
         // so camera is still in {0, 0, 0}
-        auto ray_dir = normalize(inv_view * dvec4(view_near_pos.xyz, 0).xyz);
+        auto ray_dir = normalize((inv_view * dvec4(view_near_pos.xyz, 0)).xyz);
 
         auto movement = ray_dir * ratio;
         auto translation = translate(movement);
 
         // perform update
         look_at->transform(translation);
+    }
+}
+
+void ViewerPawn::ToggleCamera()
+{
+    auto look_at = camera_->viewMatrix.cast<LookAt>();
+
+    auto focal = length(look_at->center - look_at->eye);
+    
+    if (camera_type_ == ORTHOGRAPHIC)
+    {
+        auto orthographic = camera_->projectionMatrix.cast<Orthographic>();
+
+        double height = orthographic->top - orthographic->bottom;
+        double width = orthographic->right - orthographic->left;
+        double aspectRatio = width / height;
+
+        auto perspective = Perspective::create();
+
+        perspective->fieldOfViewY = 2.0 * degrees(atan2(height * 0.5, focal));
+        perspective->aspectRatio = aspectRatio;
+        perspective->nearDistance = orthographic->nearDistance;
+        perspective->farDistance = orthographic->farDistance;
+
+        camera_->projectionMatrix = perspective;
+        camera_type_ = PERSPECTIVE;
+    }
+    else if (camera_type_ == PERSPECTIVE)
+    {
+        auto perspective = camera_->projectionMatrix.cast<Perspective>();
+
+        double height = 2.0 * focal * tan(radians(perspective->fieldOfViewY) * 0.5);
+        double width = height * perspective->aspectRatio;
+
+        auto orthographic = Orthographic::create();
+
+        orthographic->left = -width * 0.5;
+        orthographic->right = width * 0.5;
+        orthographic->bottom = -height * 0.5;
+        orthographic->top = height * 0.5;
+        orthographic->nearDistance = perspective->nearDistance;
+        orthographic->farDistance = perspective->farDistance;
+
+        camera_->projectionMatrix = orthographic;
+        camera_type_ = ORTHOGRAPHIC;
     }
 }
