@@ -1,18 +1,27 @@
 # VSGExtra
 
-**VSGExtra** is an extension library for [VulkanSceneGraph (VSG)](https://github.com/vsg-dev/VulkanSceneGraph), designed to add additional functionality and utilities that enhance the base capabilities of VSG. Whether you need extra node types, custom shaders, or higher-level scene management utilities, VSGExtra is here to help you extend your Vulkan-based rendering projects.
+**VSGExtra** is an extension library for [VulkanSceneGraph (VSG)](https://github.com/vsg-dev/VulkanSceneGraph), designed
+to add additional functionality and utilities that enhance the base capabilities of VSG. Whether you need extra node
+types, custom shaders, or higher-level scene management utilities, VSGExtra is here to help you extend your Vulkan-based
+rendering projects.
 
 ---
 
 ## Features
 
-- **Enhanced Control Utils:**  
-  Currently working on a pawn class that provides CAD-like camera control.
+- **Enhanced Control Utils:**
 
-- **Tiny Viewer:**  
-  A Tiny-Viewer that can render models.
+    - A pawn class that provides CAD-like camera control.
+
+- **Tiny Viewer:**
+
+    - A Tiny-Viewer that can render models.
 
 ---
+
+## Working on
+
+Here is the [todo list](./TodoList.md)
 
 ## Requirements
 

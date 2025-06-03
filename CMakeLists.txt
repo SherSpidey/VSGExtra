@@ -11,17 +11,17 @@ project(VSGExtra VERSION ${VSGEXTRA_VERSION})
 
 set(CMAKE_CXX_STANDARD 17)
 
-if(MSVC)
+if (MSVC)
     # CMAKE_CXX_STANDARD is not used in some msvc
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++17")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
-endif()
+endif ()
 
 ##### USER PRESET VARIABLES ######
 set(CMAKE_EXTRA_PREFIX_PATH "" CACHE STRING "additional shared path, can be empty")
-if(NOT "${CMAKE_EXTRA_PREFIX_PATH}" STREQUAL "")
+if (NOT "${CMAKE_EXTRA_PREFIX_PATH}" STREQUAL "")
     set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};${CMAKE_EXTRA_PREFIX_PATH}" CACHE STRING "updated prefix path")
-endif()
+endif ()
 ##### USER PRESET VARIABLES ######
 
 set(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "add a postfix, usually d on windows")
@@ -29,17 +29,17 @@ set(CMAKE_RELEASE_POSTFIX "" CACHE STRING "add a postfix, usually empty on windo
 set(CMAKE_RELWITHDEBINFO_POSTFIX "rd" CACHE STRING "add a postfix, usually empty on windows")
 set(CMAKE_MINSIZEREL_POSTFIX "s" CACHE STRING "add a postfix, usually empty on windows")
 
-if(CMAKE_BUILD_TYPE MATCHES "Release")
+if (CMAKE_BUILD_TYPE MATCHES "Release")
     set(CMAKE_BUILD_POSTFIX "${CMAKE_RELEASE_POSTFIX}")
 elseif (CMAKE_BUILD_TYPE MATCHES "MinSizeRel")
     set(CMAKE_BUILD_POSTFIX "${CMAKE_MINSIZEREL_POSTFIX}")
-elseif(CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
+elseif (CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
     set(CMAKE_BUILD_POSTFIX "${CMAKE_RELWITHDEBINFO_POSTFIX}")
-elseif(CMAKE_BUILD_TYPE MATCHES "Debug")
+elseif (CMAKE_BUILD_TYPE MATCHES "Debug")
     set(CMAKE_BUILD_POSTFIX "${CMAKE_DEBUG_POSTFIX}")
-else()
+else ()
     set(CMAKE_BUILD_POSTFIX "")
-endif()
+endif ()
 
 find_package(vsg REQUIRED)
 message(STATUS "Found VulkanSceneGraph with version: ${vsg_VERSION}")

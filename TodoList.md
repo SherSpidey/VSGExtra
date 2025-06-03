@@ -5,7 +5,7 @@
 - [x] Adding `Pawn`, `DefaultPawn`, `ViewerPawn` class for better controlling
 - [ ] Adding `XCamera` and `ViewerCamera` for better experience
 - [x] Adding `spatial` for spatial math calculation
-- [x] Adding `KeyboardRegistry` for better keyboard info 
+- [x] Adding `KeyboardRegistry` for better keyboard info
 - [X] Adding a usable `TinyViewer`
 - [X] Adding `ImWidget` framework for better `imgui` experience
 
