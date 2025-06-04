@@ -21,7 +21,6 @@ Application::Application()
     {
         _result = ERROR_VSG_FAILED;
         std::cerr << "[Exception] - " << e.message << '\n';
-        std::cerr.flush();
     }
 }
 
@@ -35,7 +34,6 @@ int Application::exec()
     {
         _result = ERROR_VSG_FAILED;
         std::cerr << "[Exception] - " << e.message << '\n';
-        std::cerr.flush();
     }
 
     return _result;

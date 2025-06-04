@@ -3,7 +3,7 @@
 ### Main
 
 - [x] Adding `Pawn`, `DefaultPawn`, `ViewerPawn` class for better controlling
-- [ ] Adding `XCamera` and `ViewerCamera` for better experience
+- [x] Adding `XCamera` and `ViewerCamera` for better experience
 - [x] Adding `spatial` for spatial math calculation
 - [x] Adding `KeyboardRegistry` for better keyboard info
 - [X] Adding a usable `TinyViewer`
@@ -11,6 +11,9 @@
 
 ### Sub
 
+- [x] Common manipulation through `XCamera`
+- [x] `XCamera` maintain inverse matrix
+- [x] manipulate camera function in `ViewerCamera` 
 - [ ] Update rotate functionality for `ViewerPawn`
 - [ ] Tune perspective camera zom to screen scale
 - [ ] Synchronize `Pawn`'s attitude stats

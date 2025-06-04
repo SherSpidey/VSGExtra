@@ -5,6 +5,9 @@
 #ifndef DEFAULTPAWN_H
 #define DEFAULTPAWN_H
 
+#include <vsg/app/Window.h>
+
+#include <VSGExtra/app/XCamera.h>
 #include <VSGExtra/app/Pawn.h>
 
 namespace VSGExtra
@@ -26,18 +29,9 @@ namespace VSGExtra
             double duration = 0.0;
         };
 
-        enum CameraType : std::uint8_t
-        {
-            ORTHOGRAPHIC = 0,
-            PERSPECTIVE,
-            RELATIVE_PROJECTION,
-            ELLIPSOID_PERSPECTIVE,
-            UNKNOWN,
-        };
-
         // must be created with a camera
         DefaultPawn() = delete;
-        explicit DefaultPawn(const vsg::ref_ptr<vsg::Camera>& camera);
+        explicit DefaultPawn(const vsg::ref_ptr<XCamera>& camera);
 
         // use this call to switch between cameras
         void PossessedBy(const vsg::ref_ptr<Object>& target) override;
@@ -45,16 +39,12 @@ namespace VSGExtra
         // AND YOU SHOULD NOT NEED TO USE THIS FUNCTION WITHIN DEFAULT PAWN!
         void UnPossessed() override;
 
-        CameraType get_camera_type() const;
+        XCamera::CameraType GetCameraType() const;
 
     protected:
-        CameraType camera_type_;
-
         // possessed camera
-        vsg::ref_ptr<vsg::Camera> camera_;
-
-        // update possessed camera type
-        void CheckCameraType();
+        vsg::ref_ptr<XCamera> camera_;
+        
         // get screen-space coordinates
         std::pair<int32_t, int32_t> CameraRenderAreaCoordinates(const vsg::PointerEvent& event) const;
         // whether point event is within render area

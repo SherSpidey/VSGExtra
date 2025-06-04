@@ -21,6 +21,7 @@
 
 // test
 #include <VSGExtra/app/ViewerPawn.h>
+#include <VSGExtra/app/ViewerCamera.h>
 
 #include <core/VSGApplication.h>
 
@@ -42,6 +43,7 @@ public:
 
     ref_ptr<DefaultPawn> pawn;
 
+    ref_ptr<XCamera> camera;
 private:
     VSGApplication* _owner;
 };
@@ -95,7 +97,7 @@ VSGApplication::VSGAppPImpl::VSGAppPImpl(VSGApplication* owner) : _owner(owner)
     double focal_distance = 10.;
     auto look_at = LookAt::create(center + dvec3(0, -1, 0) * focal_distance,
                                   center, dvec3(0, 0, 1));
-    auto camera = Camera::create(perspective, look_at, ViewportState::create(window->extent2D()));
+    camera = ViewerCamera::create(perspective, look_at, ViewportState::create(window->extent2D()));
 
     // create scene root
     scene_root = Group::create();
@@ -151,7 +153,16 @@ VSGApplication::VSGApplication()
 
 void VSGApplication::FitView() const
 {
-    auto pawn = _m_pimpl->pawn;
+    ComputeBounds computeBounds;
+    _m_pimpl->scene_root->accept(computeBounds);
+    dvec3 center = (computeBounds.bounds.min + computeBounds.bounds.max) * 0.5;
+    double radius = length(computeBounds.bounds.max - computeBounds.bounds.min) * 0.6;
+
+    LookAt new_look(center + dvec3(0.0, -radius * 3.5, 0.0), center,
+        dvec3(0.0, 0.0, 1.0));
+
+    auto look_at = _m_pimpl->camera->viewMatrix->cast<LookAt>();
+    *look_at = new_look;
 }
 
 int VSGApplication::RenderLoop() const
@@ -182,5 +193,7 @@ void VSGApplication::OpenModel(const char* path) const
 
         auto result = _m_pimpl->viewer->compileManager->compile(node);
         updateViewer(*_m_pimpl->viewer, result);
+
+        FitView();
     }
 }

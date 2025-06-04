@@ -28,30 +28,30 @@ namespace VSGExtra
             ROTATE,
             PAN
         };
-        
+
         ViewerPawn() = delete;
-        explicit ViewerPawn(const vsg::ref_ptr<vsg::Camera>& camera);
+        explicit ViewerPawn(const vsg::ref_ptr<XCamera>& camera);
 
         // get current pawn state
         ViewerPawnState get_pawn_state() const;
 
     protected:
-         ViewerPawnState pawn_state_;
+        ViewerPawnState pawn_state_;
 
     public:
         // core functions
         using Inherit::apply;
 
         void apply(vsg::KeyPressEvent&) override;
-        
+
         void apply(vsg::ButtonPressEvent&) override;
         void apply(vsg::ButtonReleaseEvent&) override;
         void apply(vsg::MoveEvent&) override;
         void apply(vsg::ScrollWheelEvent&) override;
         // void apply(vsg::FrameEvent&) override;
-        
+
         // TODO: Touch pad interaction
-    
+
     protected:
         // basic state info
         // indicates whether the pointer is currently active (pressed)
@@ -59,28 +59,23 @@ namespace VSGExtra
         // determines if the pointer is within the render area for zooming
         bool last_pointer_within_render_area_;
         vsg::ref_ptr<vsg::PointerEvent> previous_pointer_event_;
-        
+
         // get trackball coordinates
         vsg::dvec3 TBC(const vsg::PointerEvent& event) const;
 
     public:
-        // ViewerPawn should not have direct scene access
-        // all intersection info must be provided externally
-        // however, intersection is not always required
-        struct Intersect_Point
-        {
-            bool set {false};
-            vsg::dvec3 point {0, 0, 0};
-        };
-
         // set current intersection point
         void SetIntersectionPoint(const vsg::dvec3& point);
         // clear intersection
         void ClearIntersection();
 
     protected:
+        // ViewerPawn should not have direct scene access
+        // all intersection info must be provided externally
+        // however, intersection is not always required
+
         // the current intersection point data
-        Intersect_Point intersect_;
+        QuantumVec3D intersect_;
 
         // manipulations
         // rotates the view around a given axis from a specified base point
@@ -90,9 +85,6 @@ namespace VSGExtra
 
         // override zoom function 
         void Zoom(double ratio, const vsg::dvec2& base) override;
-
-        // toggle camera type from perspective to orthographic
-        void ToggleCamera();
     };
 }
 

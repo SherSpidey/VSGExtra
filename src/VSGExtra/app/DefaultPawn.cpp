@@ -9,21 +9,19 @@
 using namespace vsg;
 using namespace VSGExtra;
 
-DefaultPawn::DefaultPawn(const ref_ptr<Camera>& camera):
+DefaultPawn::DefaultPawn(const ref_ptr<XCamera>& camera):
     camera_(camera),
     has_keyboard_focus_(false),
     in_animation_(false),
     animation_time_stamp_(0)
 {
-   CheckCameraType();
 }
 
 void DefaultPawn::PossessedBy(const ref_ptr<Object>& target)
 {
-    if (auto camera = target.cast<Camera>())
+    if (auto camera = target.cast<XCamera>())
     {
         camera_ = camera;
-        CheckCameraType();
     }
 }
 
@@ -33,24 +31,9 @@ void DefaultPawn::UnPossessed()
     camera_ = nullptr;
 }
 
-DefaultPawn::CameraType DefaultPawn::get_camera_type() const
+XCamera::CameraType DefaultPawn::GetCameraType() const
 {
-    return camera_type_;
-}
-
-void DefaultPawn::CheckCameraType()
-{
-    const auto& camera_info = camera_->projectionMatrix->type_info();
-    if (camera_info == typeid(Perspective))
-        camera_type_ = PERSPECTIVE;
-    else if (camera_info == typeid(Orthographic))
-        camera_type_ = ORTHOGRAPHIC;
-    else if (camera_info == typeid(RelativeProjection))
-        camera_type_ = RELATIVE_PROJECTION;
-    else if (camera_info == typeid(EllipsoidPerspective))
-        camera_type_ = ELLIPSOID_PERSPECTIVE;
-    else
-        camera_type_ = UNKNOWN;
+    return camera_->get_camera_type();
 }
 
 std::pair<int32_t, int32_t> DefaultPawn::CameraRenderAreaCoordinates(const PointerEvent& event) const

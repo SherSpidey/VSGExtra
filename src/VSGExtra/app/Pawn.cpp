@@ -2,6 +2,8 @@
 // Created by ParadoxFang on 2025/5/16.
 //
 
+#include <vsg/maths/common.h>
+
 #include <VSGExtra/app/Pawn.h>
 
 using namespace vsg;

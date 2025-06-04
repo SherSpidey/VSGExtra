@@ -5,8 +5,6 @@
 #ifndef PAWN_H
 #define PAWN_H
 
-#include <vsg/app/Camera.h>
-#include <vsg/app/Window.h>
 #include <vsg/ui/Keyboard.h>
 
 #include <VSGExtra/export.h>
