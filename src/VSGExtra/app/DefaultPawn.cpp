@@ -3,6 +3,7 @@
 //
 
 #include <vsg/ui/PointerEvent.h>
+#include <vsg/utils/ComputeBounds.h>
 
 #include <VSGExtra/app/DefaultPawn.h>
 
@@ -119,6 +120,17 @@ void DefaultPawn::SetViewpoint(const ref_ptr<LookAt>& look_at, double duration)
         end_look_at_ = look_at;
         animation_time_stamp_ = duration;
     }
+}
+
+void DefaultPawn::FitView(const ref_ptr<Object>& target)
+{
+    ComputeBounds computeBounds;
+    target->accept(computeBounds);
+    dvec3 center = (computeBounds.bounds.min + computeBounds.bounds.max) * 0.5;
+    double radius = length(computeBounds.bounds.max - computeBounds.bounds.min) * 0.6;
+
+    auto position = center + dvec3(0.0, -radius * 1.5, 0.0);
+    camera_->Teleport(position);
 }
 
 void DefaultPawn::apply(KeyPressEvent& key_press_event)

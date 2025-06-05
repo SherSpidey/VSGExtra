@@ -108,6 +108,11 @@ void XCamera::update_inverse_view_()
     inverse_view_.Set(inverse(view));
 }
 
+dvec3 XCamera::GetPosition()
+{
+    return {};
+}
+
 void XCamera::ProjectionDirty()
 {
     inverse_projection_.Dirty();

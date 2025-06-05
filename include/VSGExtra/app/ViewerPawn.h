@@ -69,6 +69,8 @@ namespace VSGExtra
         // clear intersection
         void ClearIntersection();
 
+        void FitView(const vsg::ref_ptr<Object>& target) override;
+
     protected:
         // ViewerPawn should not have direct scene access
         // all intersection info must be provided externally
@@ -77,9 +79,12 @@ namespace VSGExtra
         // the current intersection point data
         QuantumVec3D intersect_;
 
+        // anchor_ is a point that used when zoom in pespective camera
+        vsg::dvec3 anchor_;
+
         // manipulations
-        // rotates the view around a given axis from a specified base point
-        void Rotate(double angle, const vsg::dvec3& axis, const vsg::dvec3& base) const;
+        // rotates the view around a given axis from a specified point
+        void Rotate(double angle, const vsg::dvec3& axis) const;
         // pans the view in screen space based on the provided delta
         void Pan(const vsg::dvec2& delta) const;
 

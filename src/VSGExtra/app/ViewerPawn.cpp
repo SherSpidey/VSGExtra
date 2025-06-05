@@ -23,6 +23,9 @@ ViewerPawn::ViewerPawn(const ref_ptr<XCamera>& camera) :
     {
         std::cerr << "Creating a ViewerPawn without a ViewerCamera!\n";
     }
+
+    // set anchor
+    anchor_ = camera_->GetPosition();
 }
 
 ViewerPawn::ViewerPawnState ViewerPawn::get_pawn_state() const
@@ -119,7 +122,7 @@ void ViewerPawn::apply(MoveEvent& move_event)
             if (intersect_.observed)
                 base = intersect_.value;
 
-            Rotate(rotate_angle, axis, base);
+            Rotate(rotate_angle, axis);
         }
     }
     else if (keyboard_registry_->Idle() &&
@@ -181,7 +184,15 @@ void ViewerPawn::ClearIntersection()
     intersect_.Superpose();
 }
 
-void ViewerPawn::Rotate(double angle, const dvec3& axis, const dvec3& base) const
+void ViewerPawn::FitView(const ref_ptr<Object>& target)
+{
+    Inherit::FitView(target);
+
+    // set anchor
+    anchor_ = camera_->GetPosition();
+}
+
+void ViewerPawn::Rotate(double angle, const dvec3& axis) const
 {
     auto look_at = camera_->viewMatrix.cast<LookAt>();
     dmat4 rotation = rotate(angle, axis);
@@ -199,7 +210,7 @@ void ViewerPawn::Pan(const dvec2& delta) const
 {
     auto pre_ndc = NDC(*previous_pointer_event_);
     auto ndc = pre_ndc + delta;
-    
+
     auto world_pos = camera_->ScreenToWorld(ndc);
     auto world_pos_pre = camera_->ScreenToWorld(pre_ndc);
 
@@ -209,7 +220,7 @@ void ViewerPawn::Pan(const dvec2& delta) const
         const auto look_at = camera_->viewMatrix.cast<LookAt>();
 
         const auto& intersect_point = intersect_.value;
-        
+
         auto pre_ray_dir = world_pos_pre - look_at->eye;
         auto pre_intersect_dir = intersect_point - look_at->eye;
         auto ray_dir = world_pos - look_at->eye;
@@ -221,7 +232,7 @@ void ViewerPawn::Pan(const dvec2& delta) const
     }
 
     auto movement = world_pos - world_pos_pre;
-    
+
     // perform update
     camera_->Translate(-movement);
 }
@@ -245,7 +256,7 @@ void ViewerPawn::Zoom(double ratio, const dvec2& base)
         auto factor = ratio < 0 ? 1.2 : 1 / 1.2;
 
         auto view_height = abs(orthographic->top - orthographic->bottom);
-        
+
         auto pre_height = view_height;
         view_height *= factor;
 
@@ -288,7 +299,15 @@ void ViewerPawn::Zoom(double ratio, const dvec2& base)
         // so camera is still in {0, 0, 0}
         auto ray_dir = normalize((inv_view * dvec4(view_near_pos.xyz, 0)).xyz);
 
-        auto movement = ray_dir * ratio;
+        // fix zoom speed
+        auto offset = camera_->GetPosition() - anchor_;
+        auto scale = length(offset);
+        if (dot(offset, ray_dir) < 0)
+            scale = std::log(scale + 1) + 1;
+        else
+            scale = 0.5 / (0.1 * scale + 1) + 0.5;
+
+        auto movement = ray_dir * ratio * scale;
 
         // perform updates
         camera_->Translate(movement);

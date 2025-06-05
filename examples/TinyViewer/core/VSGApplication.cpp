@@ -151,20 +151,6 @@ VSGApplication::VSGApplication()
     _m_pimpl = new VSGAppPImpl(this);
 }
 
-void VSGApplication::FitView() const
-{
-    ComputeBounds computeBounds;
-    _m_pimpl->scene_root->accept(computeBounds);
-    dvec3 center = (computeBounds.bounds.min + computeBounds.bounds.max) * 0.5;
-    double radius = length(computeBounds.bounds.max - computeBounds.bounds.min) * 0.6;
-
-    LookAt new_look(center + dvec3(0.0, -radius * 3.5, 0.0), center,
-        dvec3(0.0, 0.0, 1.0));
-
-    auto look_at = _m_pimpl->camera->viewMatrix->cast<LookAt>();
-    *look_at = new_look;
-}
-
 int VSGApplication::RenderLoop() const
 {
     auto viewer = _m_pimpl->viewer;
@@ -194,6 +180,6 @@ void VSGApplication::OpenModel(const char* path) const
         auto result = _m_pimpl->viewer->compileManager->compile(node);
         updateViewer(*_m_pimpl->viewer, result);
 
-        FitView();
+        _m_pimpl->pawn->FitView(_m_pimpl->scene_root);
     }
 }

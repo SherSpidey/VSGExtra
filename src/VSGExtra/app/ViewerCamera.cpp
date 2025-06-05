@@ -93,6 +93,12 @@ void ViewerCamera::Teleport(const dvec3& position)
     ViewDirty();
 }
 
+dvec3 ViewerCamera::GetPosition()
+{
+    const auto look_at = viewMatrix.cast<LookAt>();
+    return look_at->eye;
+}
+
 dvec3 ViewerCamera::ScreenToWorld(const dvec2& ndc)
 {
     const auto look_at = viewMatrix.cast<LookAt>();
@@ -102,5 +108,5 @@ dvec3 ViewerCamera::ScreenToWorld(const dvec2& ndc)
         GetInverseViewMatrix(),
         look_at->eye,
         look_at->center
-        );
+    );
 }

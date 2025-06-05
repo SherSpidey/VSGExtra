@@ -9,6 +9,11 @@
 
 namespace VSGExtra
 {
+    
+    /**
+     * Camera with explicit `LookAt` as view matrix.
+     * Used as 3D CAD like Camera.
+     */
     class VSGEXTRA_DECLSPEC ViewerCamera : public vsg::Inherit<XCamera, ViewerCamera>{
     public:
         ViewerCamera() = default;
@@ -21,6 +26,8 @@ namespace VSGExtra
 
         void Translate(const vsg::dvec3& translation) override;
         void Teleport(const vsg::dvec3& position) override;
+
+        vsg::dvec3 GetPosition() override;
 
         vsg::dvec3 ScreenToWorld(const vsg::dvec2& ndc) override;
     };

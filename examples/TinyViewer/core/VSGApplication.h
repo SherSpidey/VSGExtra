@@ -10,8 +10,7 @@
 class VSGApplication {
 public:
     VSGApplication();
-
-    void FitView() const;
+    
     int RenderLoop() const;
 
     void OpenModel(const char*) const;

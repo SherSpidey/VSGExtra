@@ -44,7 +44,7 @@ namespace VSGExtra
     protected:
         // possessed camera
         vsg::ref_ptr<XCamera> camera_;
-        
+
         // get screen-space coordinates
         std::pair<int32_t, int32_t> CameraRenderAreaCoordinates(const vsg::PointerEvent& event) const;
         // whether point event is within render area
@@ -63,6 +63,9 @@ namespace VSGExtra
         // set view to the input viewpoint
         void SetViewpoint(const Viewpoint& viewpoint);
         void SetViewpoint(const vsg::ref_ptr<vsg::LookAt>& look_at, double duration = 1.0);
+
+        // set to fit target
+        virtual void FitView(const vsg::ref_ptr<Object>& target);
 
         // vsg style core functions
         using Inherit::apply;

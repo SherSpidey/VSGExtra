@@ -73,6 +73,9 @@ namespace VSGExtra
         virtual void Rotate(const vsg::dquat& rotation) {}
         virtual void Rotate(const vsg::dquat& rotation, const vsg::dvec3& base) {}
 
+        /** Status **/
+        virtual vsg::dvec3 GetPosition();
+
         // different from setter above, these functions are just copying value
         virtual void AssignWith(const vsg::ref_ptr<vsg::LookAt>& look_at) {}
 

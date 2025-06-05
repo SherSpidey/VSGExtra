@@ -14,8 +14,8 @@
 - [x] Common manipulation through `XCamera`
 - [x] `XCamera` maintain inverse matrix
 - [x] manipulate camera function in `ViewerCamera` 
+- [x] refine perspective zoom for `ViewerPawn`
 - [ ] Update rotate functionality for `ViewerPawn`
-- [ ] Tune perspective camera zom to screen scale
 - [ ] Synchronize `Pawn`'s attitude stats
 - [ ] Solve orthographic camera's lighting artifact
 
