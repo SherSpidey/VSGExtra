@@ -29,95 +29,60 @@ jobs:
       with:
         vs-version: '17.0'
 
+    # 设置 Vulkan SDK
+    - name: Setup Vulkan SDK
+      uses: humbletim/setup-vulkan-sdk@v1.2.0
+      with:
+        vulkan-query-version: 1.3.231.1
+        vulkan-components: Vulkan-Headers, Vulkan-Loader
+        vulkan-use-cache: true
+
     # 创建安装目录
     - name: Create Installation Directory
       shell: pwsh
       run: |
-        New-Item -Path "C:/Program Files/VSG" -ItemType Directory -Force
+        New-Item -Path "C:/dev" -ItemType Directory -Force
 
-    # 下载并安装 VSG 最新 release
-    - name: Download and Install VSG
+    # 编译安装 VSG
+    - name: Build and Install VSG
       shell: pwsh
       run: |
-        Write-Host "Downloading VSG..."
-        $headers = @{
-          "Accept" = "application/vnd.github.v3+json"
-          "User-Agent" = "PowerShell Script"
-        }
-        
-        try {
-          $releaseInfo = Invoke-RestMethod -Uri "https://api.github.com/repos/vsg-dev/VulkanSceneGraph/releases/latest" -Headers $headers
-          Write-Host "Latest VSG release: $($releaseInfo.tag_name)"
-          
-          $asset = $releaseInfo.assets | Where-Object { $_.name -like "*win64*" }
-          if ($asset) {
-            Write-Host "Found asset: $($asset.name)"
-            Write-Host "Download URL: $($asset.browser_download_url)"
-            Invoke-WebRequest -Uri $asset.browser_download_url -OutFile "vsg.zip" -Headers $headers
-            Expand-Archive -Path "vsg.zip" -DestinationPath "C:/Program Files/VSG" -Force
-          } else {
-            throw "No Windows x64 asset found in the latest release"
-          }
-        } catch {
-          Write-Host "Error occurred: $_"
-          throw
-        }
+        Set-Location -Path "C:/dev"
+        git clone https://github.com/vsg-dev/VulkanSceneGraph.git
+        Set-Location -Path "VulkanSceneGraph"
+        cmake -B build -G "Visual Studio 17 2022" -A x64 `
+          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} `
+          -DCMAKE_INSTALL_PREFIX="C:/dev/install"
+        cmake --build build --config ${{ matrix.build_type }} --parallel
+        cmake --install build --config ${{ matrix.build_type }}
 
-    # 下载并安装 vsgXchange 最新 release
-    - name: Download and Install vsgXchange
+    # 编译安装 vsgXchange
+    - name: Build and Install vsgXchange
       shell: pwsh
       run: |
-        Write-Host "Downloading vsgXchange..."
-        $headers = @{
-          "Accept" = "application/vnd.github.v3+json"
-          "User-Agent" = "PowerShell Script"
-        }
-        
-        try {
-          $releaseInfo = Invoke-RestMethod -Uri "https://api.github.com/repos/vsg-dev/vsgXchange/releases/latest" -Headers $headers
-          Write-Host "Latest vsgXchange release: $($releaseInfo.tag_name)"
-          
-          $asset = $releaseInfo.assets | Where-Object { $_.name -like "*win64*" }
-          if ($asset) {
-            Write-Host "Found asset: $($asset.name)"
-            Write-Host "Download URL: $($asset.browser_download_url)"
-            Invoke-WebRequest -Uri $asset.browser_download_url -OutFile "vsgxchange.zip" -Headers $headers
-            Expand-Archive -Path "vsgxchange.zip" -DestinationPath "C:/Program Files/VSG" -Force
-          } else {
-            throw "No Windows x64 asset found in the latest release"
-          }
-        } catch {
-          Write-Host "Error occurred: $_"
-          throw
-        }
+        Set-Location -Path "C:/dev"
+        git clone https://github.com/vsg-dev/vsgXchange.git
+        Set-Location -Path "vsgXchange"
+        cmake -B build -G "Visual Studio 17 2022" -A x64 `
+          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} `
+          -DCMAKE_PREFIX_PATH="C:/dev/install" `
+          -DCMAKE_INSTALL_PREFIX="C:/dev/install"
+        cmake --build build --config ${{ matrix.build_type }} --parallel
+        cmake --install build --config ${{ matrix.build_type }}
 
-    # 下载并安装 vsgImGui 最新 release
-    - name: Download and Install vsgImGui
+    # 编译安装 vsgImGui
+    - name: Build and Install vsgImGui
       shell: pwsh
       run: |
-        Write-Host "Downloading vsgImGui..."
-        $headers = @{
-          "Accept" = "application/vnd.github.v3+json"
-          "User-Agent" = "PowerShell Script"
-        }
-        
-        try {
-          $releaseInfo = Invoke-RestMethod -Uri "https://api.github.com/repos/vsg-dev/vsgImGui/releases/latest" -Headers $headers
-          Write-Host "Latest vsgImGui release: $($releaseInfo.tag_name)"
-          
-          $asset = $releaseInfo.assets | Where-Object { $_.name -like "*win64*" }
-          if ($asset) {
-            Write-Host "Found asset: $($asset.name)"
-            Write-Host "Download URL: $($asset.browser_download_url)"
-            Invoke-WebRequest -Uri $asset.browser_download_url -OutFile "vsgimgui.zip" -Headers $headers
-            Expand-Archive -Path "vsgimgui.zip" -DestinationPath "C:/Program Files/VSG" -Force
-          } else {
-            throw "No Windows x64 asset found in the latest release"
-          }
-        } catch {
-          Write-Host "Error occurred: $_"
-          throw
-        }
+        Set-Location -Path "C:/dev"
+        git clone https://github.com/vsg-dev/vsgImGui.git
+        Set-Location -Path "vsgImGui"
+        cmake -B build -G "Visual Studio 17 2022" -A x64 `
+          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} `
+          -DCMAKE_PREFIX_PATH="C:/dev/install" `
+          -DCMAKE_INSTALL_PREFIX="C:/dev/install"
+        cmake --build build --config ${{ matrix.build_type }} --parallel
+        cmake --install build --config ${{ matrix.build_type }}
 
     - name: Set reusable strings
       id: strings
@@ -125,6 +90,7 @@ jobs:
       run: |
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
 
+    # 编译主项目
     - name: Configure CMake
       shell: pwsh
       run: |
@@ -133,7 +99,7 @@ jobs:
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} `
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} `
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} `
-        -DCMAKE_PREFIX_PATH="C:/Program Files/VSG" `
+        -DCMAKE_PREFIX_PATH="C:/dev/install" `
         -S ${{ github.workspace }}
 
     - name: Build
@@ -148,8 +114,10 @@ jobs:
       shell: pwsh
       run: |
         mkdir release
+        # 复制主项目构建结果
         Copy-Item "${{ steps.strings.outputs.build-output-dir }}/${{ matrix.build_type }}/*" -Destination "release/" -Recurse
-        Copy-Item "C:/Program Files/VSG/bin/*" -Destination "release/" -Recurse
+        # 复制依赖库
+        Copy-Item "C:/dev/install/bin/*" -Destination "release/" -Recurse
 
     # 上传构建产物
     - name: Upload artifacts
