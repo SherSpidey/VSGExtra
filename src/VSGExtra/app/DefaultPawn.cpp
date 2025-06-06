@@ -75,6 +75,15 @@ void DefaultPawn::AddWindow(const ref_ptr<Window>& window, const ivec2& offset)
     window_offsets[observer_ptr<Window>(window)] = offset;
 }
 
+void DefaultPawn::AddKeyViewpoint(KeySymbol key, double duration)
+{
+    if (auto look_at = camera_->viewMatrix.cast<LookAt>())
+    {
+        auto new_look_at = LookAt::create(*look_at);
+        key_viewpoint_map[key] = {new_look_at, duration};
+    }
+}
+
 void DefaultPawn::AddKeyViewpoint(KeySymbol key, const Viewpoint& viewpoint)
 {
     key_viewpoint_map[key] = viewpoint;
@@ -131,6 +140,15 @@ void DefaultPawn::FitView(const ref_ptr<Object>& target)
 
     auto position = center + dvec3(0.0, -radius * 1.5, 0.0);
     camera_->Teleport(position);
+    camera_->FocusOn(center);
+
+    if (GetCameraType() == XCamera::PERSPECTIVE)
+    {
+        auto perspective = camera_->projectionMatrix.cast<Perspective>();
+        perspective->nearDistance = 0.0001 * radius;
+        perspective->farDistance = 600 * radius;
+    }
+    
 }
 
 void DefaultPawn::apply(KeyPressEvent& key_press_event)

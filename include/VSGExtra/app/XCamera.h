@@ -70,11 +70,17 @@ namespace VSGExtra
         virtual void Translate(const vsg::dvec3& translation) {}
         virtual void Teleport(const vsg::dvec3& position) {}
 
+        virtual void Rotate(double angle_rad, const vsg::dvec3& axis) {}
+        virtual void Rotate(double angle_rad, const vsg::dvec3& axis, const vsg::dvec3& base) {}
+        
         virtual void Rotate(const vsg::dquat& rotation) {}
         virtual void Rotate(const vsg::dquat& rotation, const vsg::dvec3& base) {}
 
+        virtual void FocusOn(const vsg::dvec3& position) {}
+
         /** Status **/
         virtual vsg::dvec3 GetPosition();
+        virtual vsg::dvec3 GetFocal();
 
         // different from setter above, these functions are just copying value
         virtual void AssignWith(const vsg::ref_ptr<vsg::LookAt>& look_at) {}

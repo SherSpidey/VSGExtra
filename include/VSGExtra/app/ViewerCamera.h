@@ -27,7 +27,16 @@ namespace VSGExtra
         void Translate(const vsg::dvec3& translation) override;
         void Teleport(const vsg::dvec3& position) override;
 
+        void Rotate(double angle_rad, const vsg::dvec3& axis) override;
+        void Rotate(double angle_rad, const vsg::dvec3& axis, const vsg::dvec3& base) override;
+        
+        void Rotate(const vsg::dquat& rotation) override;
+        void Rotate(const vsg::dquat& rotation, const vsg::dvec3& base) override;
+
+        void FocusOn(const vsg::dvec3& position) override;
+
         vsg::dvec3 GetPosition() override;
+        vsg::dvec3 GetFocal() override;
 
         vsg::dvec3 ScreenToWorld(const vsg::dvec2& ndc) override;
     };

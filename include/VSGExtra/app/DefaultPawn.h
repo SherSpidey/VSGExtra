@@ -57,7 +57,8 @@ namespace VSGExtra
         void AddWindow(const vsg::ref_ptr<vsg::Window>& window, const vsg::ivec2& offset = {});
 
         // add a preserved viewpoint-key binding
-        void AddKeyViewpoint(vsg::KeySymbol key, const Viewpoint& viewpoint = {});
+        void AddKeyViewpoint(vsg::KeySymbol key, double duration = 1.0);
+        void AddKeyViewpoint(vsg::KeySymbol key, const Viewpoint& viewpoint);
         void AddKeyViewpoint(vsg::KeySymbol key, const vsg::ref_ptr<vsg::LookAt>& look_at, double duration = 1.0);
 
         // set view to the input viewpoint

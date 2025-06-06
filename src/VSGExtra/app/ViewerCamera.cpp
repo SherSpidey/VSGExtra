@@ -93,10 +93,80 @@ void ViewerCamera::Teleport(const dvec3& position)
     ViewDirty();
 }
 
+void ViewerCamera::Rotate(double angle_rad, const dvec3& axis)
+{
+    auto look_at = viewMatrix.cast<LookAt>();
+    auto base = look_at->center;
+
+    Rotate(angle_rad, axis, base);
+}
+
+void ViewerCamera::Rotate(double angle_rad, const dvec3& axis, const dvec3& base)
+{
+    auto look_at = viewMatrix.cast<LookAt>();
+
+    auto rotate_matrix = rotate(angle_rad, axis);
+    auto view_matrix = GetViewMatrix();
+    const auto& inverse_view = GetInverseViewMatrix();
+
+    auto base_view_space = view_matrix * base;
+    auto matrix = inverse_view * translate(base_view_space) *
+        rotate_matrix * translate(-base_view_space) * view_matrix;
+
+    // regular rotate
+    look_at->up = normalize(matrix * (look_at->eye + look_at->up) - matrix * look_at->eye);
+    look_at->center = matrix * look_at->center;
+    look_at->eye = matrix * look_at->eye;
+
+    ViewDirty();
+}
+
+void ViewerCamera::Rotate(const dquat& rotation)
+{
+    auto look_at = viewMatrix.cast<LookAt>();
+    auto base = look_at->center;
+
+    Rotate(rotation, base);
+}
+
+void ViewerCamera::Rotate(const dquat& rotation, const dvec3& base)
+{
+    auto look_at = viewMatrix.cast<LookAt>();
+
+    auto rotate_matrix = rotate(rotation);
+    auto view_matrix = GetViewMatrix();
+    const auto& inverse_view = GetInverseViewMatrix();
+
+    auto base_view_space = view_matrix * base;
+    auto matrix = inverse_view * translate(base_view_space) *
+        rotate_matrix * translate(-base_view_space) * view_matrix;
+
+    // regular rotate
+    look_at->up = normalize(matrix * (look_at->eye + look_at->up) - matrix * look_at->eye);
+    look_at->center = matrix * look_at->center;
+    look_at->eye = matrix * look_at->eye;
+
+    ViewDirty();
+}
+
+void ViewerCamera::FocusOn(const dvec3& position)
+{
+    auto look_at = viewMatrix.cast<LookAt>();
+    look_at->center = position;
+
+    ViewDirty();
+}
+
 dvec3 ViewerCamera::GetPosition()
 {
     const auto look_at = viewMatrix.cast<LookAt>();
     return look_at->eye;
+}
+
+dvec3 ViewerCamera::GetFocal()
+{
+    const auto look_at = viewMatrix.cast<LookAt>();
+    return look_at->center;
 }
 
 dvec3 ViewerCamera::ScreenToWorld(const dvec2& ndc)

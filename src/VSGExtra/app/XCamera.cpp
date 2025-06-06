@@ -113,6 +113,11 @@ dvec3 XCamera::GetPosition()
     return {};
 }
 
+dvec3 XCamera::GetFocal()
+{
+    return {};
+}
+
 void XCamera::ProjectionDirty()
 {
     inverse_projection_.Dirty();

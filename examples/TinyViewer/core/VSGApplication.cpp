@@ -181,5 +181,6 @@ void VSGApplication::OpenModel(const char* path) const
         updateViewer(*_m_pimpl->viewer, result);
 
         _m_pimpl->pawn->FitView(_m_pimpl->scene_root);
+        _m_pimpl->pawn->AddKeyViewpoint(KEY_Space, 0.5);
     }
 }

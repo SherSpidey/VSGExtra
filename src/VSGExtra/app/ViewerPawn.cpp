@@ -23,9 +23,6 @@ ViewerPawn::ViewerPawn(const ref_ptr<XCamera>& camera) :
     {
         std::cerr << "Creating a ViewerPawn without a ViewerCamera!\n";
     }
-
-    // set anchor
-    anchor_ = camera_->GetPosition();
 }
 
 ViewerPawn::ViewerPawnState ViewerPawn::get_pawn_state() const
@@ -112,15 +109,12 @@ void ViewerPawn::apply(MoveEvent& move_event)
 
         auto axis = cross(normalize(tbc), normalize(pre_tbc));
         auto axis_len = length(axis);
+        
         // rotation axis exits
         if (axis_len > 0.0)
         {
-            auto rotate_angle = asin(axis_len);
+            auto rotate_angle = std::asin(axis_len);
             axis /= axis_len;
-
-            auto base = dvec3();
-            if (intersect_.observed)
-                base = intersect_.value;
 
             Rotate(rotate_angle, axis);
         }
@@ -184,26 +178,17 @@ void ViewerPawn::ClearIntersection()
     intersect_.Superpose();
 }
 
-void ViewerPawn::FitView(const ref_ptr<Object>& target)
-{
-    Inherit::FitView(target);
-
-    // set anchor
-    anchor_ = camera_->GetPosition();
-}
-
 void ViewerPawn::Rotate(double angle, const dvec3& axis) const
 {
     auto look_at = camera_->viewMatrix.cast<LookAt>();
-    dmat4 rotation = rotate(angle, axis);
-    dmat4 lv = lookAt(look_at->eye, look_at->center, look_at->up);
-    dvec3 centerEyeSpace = (lv * look_at->center);
-
-    dmat4 matrix = inverse(lv) * translate(centerEyeSpace) * rotation * translate(-centerEyeSpace) * lv;
-
-    look_at->up = normalize(matrix * (look_at->eye + look_at->up) - matrix * look_at->eye);
-    look_at->center = matrix * look_at->center;
-    look_at->eye = matrix * look_at->eye;
+    
+    auto base = look_at->center;
+    if (intersect_.observed)
+    {
+        base = intersect_.Reveal();
+    }
+    
+    camera_->Rotate(angle, axis, base);
 }
 
 void ViewerPawn::Pan(const dvec2& delta) const
@@ -217,17 +202,17 @@ void ViewerPawn::Pan(const dvec2& delta) const
     // TODO: not tested yet
     if (GetCameraType() == XCamera::PERSPECTIVE && intersect_.observed)
     {
-        const auto look_at = camera_->viewMatrix.cast<LookAt>();
+        auto position = camera_->GetPosition();
 
         const auto& intersect_point = intersect_.value;
 
-        auto pre_ray_dir = world_pos_pre - look_at->eye;
-        auto pre_intersect_dir = intersect_point - look_at->eye;
-        auto ray_dir = world_pos - look_at->eye;
+        auto pre_ray_dir = world_pos_pre - position;
+        auto pre_intersect_dir = intersect_point - position;
+        auto ray_dir = world_pos - position;
 
         auto intersect_dir = ray_dir * (length(pre_intersect_dir) / length(pre_ray_dir));
 
-        world_pos = intersect_dir + look_at->eye;
+        world_pos = intersect_dir + position;
         world_pos_pre = intersect_point;
     }
 
@@ -299,13 +284,12 @@ void ViewerPawn::Zoom(double ratio, const dvec2& base)
         // so camera is still in {0, 0, 0}
         auto ray_dir = normalize((inv_view * dvec4(view_near_pos.xyz, 0)).xyz);
 
-        // fix zoom speed
-        auto offset = camera_->GetPosition() - anchor_;
-        auto scale = length(offset);
-        if (dot(offset, ray_dir) < 0)
-            scale = std::log(scale + 1) + 1;
-        else
-            scale = 0.5 / (0.1 * scale + 1) + 0.5;
+        // pixel-screen fix
+        auto left_up = camera_->ScreenToWorld({-1, 1});
+        auto left_down = camera_->ScreenToWorld({-1, -1});
+        auto world_height = length(left_down - left_up);
+        // one out of ten speed
+        auto scale = world_height / 10;
 
         auto movement = ray_dir * ratio * scale;
 
