@@ -33,9 +33,7 @@ jobs:
     - name: Download and Install VSG
       shell: pwsh
       run: |
-        # 获取最新release信息
         $vsgRelease = Invoke-RestMethod -Uri "https://api.github.com/repos/vsg-dev/VulkanSceneGraph/releases/latest"
-        # 下载 Windows 版本的 VSG
         $vsgAsset = $vsgRelease.assets | Where-Object { $_.name -like "*win64*" }
         Invoke-WebRequest -Uri $vsgAsset.browser_download_url -OutFile "vsg.zip"
         Expand-Archive -Path "vsg.zip" -DestinationPath "C:/Program Files/VSG"
@@ -90,9 +88,10 @@ jobs:
         Copy-Item "${{ steps.strings.outputs.build-output-dir }}/${{ matrix.build_type }}/*" -Destination "release/" -Recurse
         Copy-Item "C:/Program Files/VSG/bin/*" -Destination "release/" -Recurse
 
-    # 上传构建产物
+    # 上传构建产物（更新到 v4）
     - name: Upload artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: windows-release
         path: release/
+        compression-level: 6  # 新增压缩级别选项，v4 支持的特性
