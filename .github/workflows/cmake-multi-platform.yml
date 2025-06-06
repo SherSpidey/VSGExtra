@@ -1,0 +1,98 @@
+name: CMake Build with VSG
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest]
+        build_type: [Release]
+        include:
+          - os: windows-latest
+            c_compiler: cl
+            cpp_compiler: cl
+
+    steps:
+    - uses: actions/checkout@v4
+
+    # 设置 MSVC 环境
+    - name: Setup MSVC
+      uses: microsoft/setup-msbuild@v1.3
+      with:
+        vs-version: '17.0'
+
+    # 下载并安装 VSG 最新 release
+    - name: Download and Install VSG
+      shell: pwsh
+      run: |
+        # 获取最新release信息
+        $vsgRelease = Invoke-RestMethod -Uri "https://api.github.com/repos/vsg-dev/VulkanSceneGraph/releases/latest"
+        # 下载 Windows 版本的 VSG
+        $vsgAsset = $vsgRelease.assets | Where-Object { $_.name -like "*win64*" }
+        Invoke-WebRequest -Uri $vsgAsset.browser_download_url -OutFile "vsg.zip"
+        Expand-Archive -Path "vsg.zip" -DestinationPath "C:/Program Files/VSG"
+
+    # 下载并安装 vsgXchange 最新 release
+    - name: Download and Install vsgXchange
+      shell: pwsh
+      run: |
+        $vsgXchangeRelease = Invoke-RestMethod -Uri "https://api.github.com/repos/vsg-dev/vsgXchange/releases/latest"
+        $vsgXchangeAsset = $vsgXchangeRelease.assets | Where-Object { $_.name -like "*win64*" }
+        Invoke-WebRequest -Uri $vsgXchangeAsset.browser_download_url -OutFile "vsgxchange.zip"
+        Expand-Archive -Path "vsgxchange.zip" -DestinationPath "C:/Program Files/VSG" -Force
+
+    # 下载并安装 vsgImGui 最新 release
+    - name: Download and Install vsgImGui
+      shell: pwsh
+      run: |
+        $vsgImGuiRelease = Invoke-RestMethod -Uri "https://api.github.com/repos/vsg-dev/vsgImGui/releases/latest"
+        $vsgImGuiAsset = $vsgImGuiRelease.assets | Where-Object { $_.name -like "*win64*" }
+        Invoke-WebRequest -Uri $vsgImGuiAsset.browser_download_url -OutFile "vsgimgui.zip"
+        Expand-Archive -Path "vsgimgui.zip" -DestinationPath "C:/Program Files/VSG" -Force
+
+    - name: Set reusable strings
+      id: strings
+      shell: bash
+      run: |
+        echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+
+    - name: Configure CMake
+      shell: pwsh
+      run: |
+        cmake -B ${{ steps.strings.outputs.build-output-dir }} `
+        -G "Visual Studio 17 2022" -A x64 `
+        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} `
+        -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} `
+        -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} `
+        -DCMAKE_PREFIX_PATH="C:/Program Files/VSG" `
+        -S ${{ github.workspace }}
+
+    - name: Build
+      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
+
+    - name: Test
+      working-directory: ${{ steps.strings.outputs.build-output-dir }}
+      run: ctest --build-config ${{ matrix.build_type }}
+
+    # 打包构建结果
+    - name: Package
+      shell: pwsh
+      run: |
+        mkdir release
+        Copy-Item "${{ steps.strings.outputs.build-output-dir }}/${{ matrix.build_type }}/*" -Destination "release/" -Recurse
+        Copy-Item "C:/Program Files/VSG/bin/*" -Destination "release/" -Recurse
+
+    # 上传构建产物
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: windows-release
+        path: release/
