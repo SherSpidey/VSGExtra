@@ -107,6 +107,8 @@ VSGApplication::VSGAppPImpl::VSGAppPImpl(VSGApplication* owner) : _owner(owner)
     render_graph = RenderGraph::create(window);
     command_graph->addChild(render_graph);
 
+    render_graph->setClearValues({{0.9411765f, 0.9725490f, 1.0f, 1.0f}});
+
     // create a view with scene_root
     auto view = View::create(camera);
     // add a headlight and the scene_root

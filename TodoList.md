@@ -2,6 +2,7 @@
 
 ### Core Tasks
 
+- [ ] Adding `Actor` base class for scene object
 - [ ] Adding a way to do shader management
 
 ### Details
@@ -11,7 +12,7 @@
 ### Leftover
 
 - [ ] Synchronize `Pawn`'s attitude stats
-- [ ] Solve orthographic camera's lighting artifact
+- [x] Solve orthographic camera's lighting artifact
 
 ## Archive
 
