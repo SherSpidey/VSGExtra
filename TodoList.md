@@ -3,6 +3,7 @@
 ### Core Tasks
 
 - [ ] Adding `Actor` base class for scene object
+- [ ] Something to manager `Actor`
 - [ ] Adding a way to do shader management
 
 ### Details

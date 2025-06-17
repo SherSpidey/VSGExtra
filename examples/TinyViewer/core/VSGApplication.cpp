@@ -28,6 +28,7 @@
 using namespace vsg;
 using namespace VSGExtra;
 
+
 class VSGApplication::VSGAppPImpl
 {
 public:
@@ -44,8 +45,43 @@ public:
     ref_ptr<DefaultPawn> pawn;
 
     ref_ptr<XCamera> camera;
+
 private:
     VSGApplication* _owner;
+};
+
+class TestVisitor : public Inherit<Visitor, TestVisitor>
+{
+public:
+    TestVisitor() = delete;
+    
+    explicit TestVisitor(VSGApplication::VSGAppPImpl* impl) : impl_(impl) {}
+
+    void apply(Object& object) override
+    {
+        object.traverse(*this);
+    }
+
+    void apply(KeyPressEvent& key_press_event) override
+    {
+        if (key_press_event.keyBase == KEY_p)
+        {
+            impl_->render_graph->setClearValues({{0.8734f, 0.9393f, 1.0f, 1.0f}});
+        }
+        if (key_press_event.keyBase == KEY_d)
+        {
+            auto viewer = impl_->viewer;
+            viewer->deviceWaitIdle();
+            
+            auto root = impl_->scene_root;
+            auto& children = root->children;
+            if (!children.empty())
+                children.erase(children.begin());
+        }
+    }
+
+private:
+    VSGApplication::VSGAppPImpl* impl_;
 };
 
 VSGApplication::VSGAppPImpl::VSGAppPImpl(VSGApplication* owner) : _owner(owner)
@@ -107,8 +143,6 @@ VSGApplication::VSGAppPImpl::VSGAppPImpl(VSGApplication* owner) : _owner(owner)
     render_graph = RenderGraph::create(window);
     command_graph->addChild(render_graph);
 
-    render_graph->setClearValues({{0.9411765f, 0.9725490f, 1.0f, 1.0f}});
-
     // create a view with scene_root
     auto view = View::create(camera);
     // add a headlight and the scene_root
@@ -141,6 +175,7 @@ VSGApplication::VSGAppPImpl::VSGAppPImpl(VSGApplication* owner) : _owner(owner)
     viewer->addEventHandler(vsgImGui::SendEventsToImGui::create());
     viewer->addEventHandler(CloseHandler::create(viewer));
     viewer->addEventHandler(pawn);
+    viewer->addEventHandler(TestVisitor::create(this));
 
     viewer->setupThreading();
 

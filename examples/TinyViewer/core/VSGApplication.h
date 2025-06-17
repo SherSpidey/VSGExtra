@@ -10,13 +10,14 @@
 class VSGApplication {
 public:
     VSGApplication();
+
+    class VSGAppPImpl;
     
     int RenderLoop() const;
 
     void OpenModel(const char*) const;
 
 private:
-    class VSGAppPImpl;
     VSGAppPImpl* _m_pimpl;
 };
 
