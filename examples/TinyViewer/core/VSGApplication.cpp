@@ -20,8 +20,10 @@
 #endif
 
 // test
+#include <VSGExtra/io/TinyObjReader.h>
 #include <VSGExtra/app/ViewerPawn.h>
 #include <VSGExtra/app/ViewerCamera.h>
+#include <VSGExtra/threading/SceneGraphTasks.h>
 
 #include <core/VSGApplication.h>
 
@@ -71,12 +73,14 @@ public:
         if (key_press_event.keyBase == KEY_d)
         {
             auto viewer = impl_->viewer;
-            viewer->deviceWaitIdle();
             
             auto root = impl_->scene_root;
             auto& children = root->children;
             if (!children.empty())
-                children.erase(children.begin());
+            {
+                auto node = children[0];
+                DetachNodeFrom(root, node, viewer);
+            }
         }
     }
 
@@ -92,7 +96,8 @@ VSGApplication::VSGAppPImpl::VSGAppPImpl(VSGApplication* owner) : _owner(owner)
 
 #ifdef vsgXchange_all
     // add vsgXchange's support for reading and writing 3rd party file formats
-    options->add(vsgXchange::all::create());
+    // options->add(vsgXchange::all::create());
+    options->add(TinyObjReader::create());
 #endif
 
     // init window traits
@@ -212,10 +217,7 @@ void VSGApplication::OpenModel(const char* path) const
     Path filename(path);
     if (auto node = vsg::read_cast<Node>(filename, _m_pimpl->options))
     {
-        _m_pimpl->scene_root->addChild(node);
-
-        auto result = _m_pimpl->viewer->compileManager->compile(node);
-        updateViewer(*_m_pimpl->viewer, result);
+        AttachNodeTo(_m_pimpl->scene_root, node, _m_pimpl->viewer);
 
         _m_pimpl->pawn->FitView(_m_pimpl->scene_root);
         _m_pimpl->pawn->AddKeyViewpoint(KEY_Space, 0.5);

@@ -13,6 +13,10 @@ set(SOURCES
 
         ui/KeyboardRegistry.cpp
 
+        threading/SceneGraphTasks.cpp
+
+        io/TinyObjReader.cpp
+
         app/XCamera.cpp
         app/ViewerCamera.cpp
         app/Pawn.cpp

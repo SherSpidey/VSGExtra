@@ -3,6 +3,8 @@
 ### Core Tasks
 
 - [ ] Adding `Actor` base class for scene object
+- [x] Adding `SceneGraphTasks` for dynamic scene graph operations
+- [ ] Adding `TinyObjReader` using [RapidObj](https://github.com/guybrush77/rapidobj)
 - [ ] Something to manager `Actor`
 - [ ] Adding a way to do shader management
 
@@ -17,10 +19,10 @@
 
 ## Archive
 
-### version: `1.1`
+### version: `1.0.1`
 
 
-### version: `1.0`
+### version: `1.0.0`
 
 - [x] Adding `Pawn`, `DefaultPawn`, `ViewerPawn` class for better controlling
 - [x] Adding `XCamera` and `ViewerCamera` for better experience
