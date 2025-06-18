@@ -96,8 +96,8 @@ VSGApplication::VSGAppPImpl::VSGAppPImpl(VSGApplication* owner) : _owner(owner)
 
 #ifdef vsgXchange_all
     // add vsgXchange's support for reading and writing 3rd party file formats
-    // options->add(vsgXchange::all::create());
-    options->add(TinyObjReader::create());
+    options->add(vsgXchange::all::create());
+    // options->add(TinyObjReader::create());
 #endif
 
     // init window traits
