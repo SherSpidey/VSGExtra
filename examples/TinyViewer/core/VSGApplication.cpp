@@ -19,6 +19,9 @@
 #   include <resources/resources.h>
 #endif
 
+
+#include <filesystem>
+
 // test
 #include <VSGExtra/io/TinyObjReader.h>
 #include <VSGExtra/app/ViewerPawn.h>
@@ -92,12 +95,17 @@ VSGApplication::VSGAppPImpl::VSGAppPImpl(VSGApplication* owner) : _owner(owner)
 {
     // init options
     options = Options::create();
-    options->paths = getEnvPaths("MyPath");
+    options->paths = getEnvPaths("DataPath");
+    // options->sharedObjects = SharedObjects::create();
+
+    // set data path to current path
+    if (!options->paths.empty())
+        std::filesystem::current_path(options->paths[0].c_str());
 
 #ifdef vsgXchange_all
+    options->add(TinyObjReader::create());
     // add vsgXchange's support for reading and writing 3rd party file formats
     options->add(vsgXchange::all::create());
-    // options->add(TinyObjReader::create());
 #endif
 
     // init window traits
