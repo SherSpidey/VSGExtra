@@ -8,9 +8,11 @@
 #include <vsg/state/material.h>
 #include <vsg/utils/GraphicsPipelineConfigurator.h>
 #include <vsg/utils/ShaderSet.h>
+#include <vsg/nodes/VertexIndexDraw.h>
 
 #include <VSGExtra/io/TinyObjReader.h>
 
+#pragma warning(disable: 4819)
 #include <VSGExtra/io/rapidobj.hpp>
 
 using namespace vsg;
@@ -77,19 +79,130 @@ ref_ptr<Object> TinyObjReader::read(const Path& path, ref_ptr<const Options> opt
     if (!success)
         return {};
 
+    auto draw_nodes = AssignToDraw(result);
+
     auto shader_set = CreateShaderSet(options);
-    auto pipeline_config = GraphicsPipelineConfigurator::create(shader_set);
 
-    auto node = StateGroup::create();
+    DescriptorSetLayoutBindings descriptorBindings;
+    auto descriptorSetLayout = DescriptorSetLayout::create(descriptorBindings);
 
-    auto& vertices_ori = result.attributes.positions;
-    auto vertices = vec3Array::create(vertices_ori.size() / 3);
-    std::memcpy(vertices->dataPointer(), vertices_ori.data(), vertices_ori.size() * sizeof(vertices_ori[0]));
+    // Set up push constants for transformation matrices
+    PushConstantRanges pushConstantRanges{
+        {VK_SHADER_STAGE_VERTEX_BIT, 0, 128} // projection and model-view matrices
+    };
 
-    std::cout << (*vertices)[vertices->size() -1] << std::endl;
-    std::cout << vertices_ori[vertices_ori.size() - 3] << " " << vertices_ori[vertices_ori.size() - 2] <<  " " << vertices_ori[vertices_ori.size() - 1] <<std::endl;
+    VertexInputState::Bindings vertexBindingsDescriptions{
+        VkVertexInputBindingDescription{0, sizeof(float) * 8, VK_VERTEX_INPUT_RATE_VERTEX}, // vertices
+        VkVertexInputBindingDescription{1, sizeof(vec4), VK_VERTEX_INPUT_RATE_INSTANCE} // colors
+    };
 
-    
+    VertexInputState::Attributes vertexAttributeDescriptions{
+        VkVertexInputAttributeDescription{0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0},
+        VkVertexInputAttributeDescription{1, 0, VK_FORMAT_R32G32B32_SFLOAT, sizeof(float) * 3},
+        VkVertexInputAttributeDescription{2, 0, VK_FORMAT_R32G32B32_SFLOAT, sizeof(float) * 6},
+        
+        VkVertexInputAttributeDescription{3, 1, VK_FORMAT_R32G32B32A32_SFLOAT, 0} // colors
+    };
 
-    return {};
+    auto pipelineLayout = PipelineLayout::create(DescriptorSetLayouts{descriptorSetLayout},
+                                                 pushConstantRanges);
+
+    // Set up graphics pipeline states
+    GraphicsPipelineStates pipelineStates{
+        VertexInputState::create(vertexBindingsDescriptions, vertexAttributeDescriptions),
+        InputAssemblyState::create(),
+        RasterizationState::create(),
+        MultisampleState::create(),
+        ColorBlendState::create(),
+        DepthStencilState::create()
+    };
+
+    auto graphicsPipeline = GraphicsPipeline::create(
+        pipelineLayout,
+        shader_set->stages,
+        pipelineStates);
+
+    auto bindGraphicsPipeline = BindGraphicsPipeline::create(graphicsPipeline);
+
+    // Create StateGroup as the root of the scene
+    auto scenegraph = StateGroup::create();
+    scenegraph->add(bindGraphicsPipeline);
+
+    for (const auto& node : draw_nodes)
+        scenegraph->addChild(node);
+
+    return scenegraph;
+}
+
+std::vector<ref_ptr<VertexIndexDraw>> TinyObjReader::AssignToDraw(const rapidobj::Result& result)
+{
+    std::vector<ref_ptr<VertexIndexDraw>> nodes;
+
+    // map raw float array to vec array
+    auto& pos = result.attributes.positions;
+    auto position = vec3Array::create(pos.size() / 3);
+    std::memcpy(position->dataPointer(), pos.data(), pos.size() * sizeof(pos[0]));
+
+    auto& nor = result.attributes.normals;
+    auto normals = vec3Array::create(nor.size() / 3);
+    std::memcpy(normals->dataPointer(), nor.data(), nor.size() * sizeof(nor[0]));
+
+    auto& tex = result.attributes.texcoords;
+    auto texture_coords = vec2Array::create(tex.size() / 2);
+    std::memcpy(texture_coords->dataPointer(), tex.data(), tex.size() * sizeof(tex[0]));
+
+    std::vector<Vertex> vertices;
+    std::vector<std::vector<uint16_t>> indices_list;
+    std::map<std::tuple<int, int, int>, uint16_t> vertex_map;
+
+    // map all vertices
+    indices_list.reserve(result.shapes.size());
+    for (const auto& shape : result.shapes)
+    {
+        auto& mesh = shape.mesh;
+        std::vector<uint16_t> indices;
+
+        for (const auto& index : mesh.indices)
+        {
+            auto [v, t, n] = index;
+            auto key = std::make_tuple(v, t, n);
+            if (vertex_map.count(key) == 0)
+            {
+                Vertex vertex;
+                vertex.pos = (*position)[v];
+                vertex.normal = (*normals)[n];
+                vertex.texture_coord = (*texture_coords)[t];
+                vertex_map[key] = static_cast<uint16_t>(vertices.size());
+                vertices.push_back(vertex);
+            }
+            indices.push_back(vertex_map[key]);
+        }
+
+        indices_list.emplace_back(indices);
+    }
+
+    // create attribute
+    auto vertices_data = Array<Vertex>::create(vertices.size());
+    std::copy_n(vertices.begin(), vertices.size(), vertices_data->begin());
+
+    auto color_data = vec4Array::create({
+        {1.0f, 0.0f, 0.0f, 1.f}
+    });
+
+    for (const auto& indices : indices_list)
+    {
+        auto indices_data = ushortArray::create(indices.size());
+        std::copy_n(indices.begin(), indices.size(), indices_data->begin());
+
+        DataList arrays{vertices_data, color_data};
+        auto vid = VertexIndexDraw::create();
+        vid->assignArrays(arrays);
+        vid->assignIndices(indices_data);
+        vid->indexCount = indices_data->width();
+        vid->instanceCount = 1;
+
+        nodes.push_back(vid);
+    }
+
+    return nodes;
 }

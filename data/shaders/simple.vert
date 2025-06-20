@@ -7,13 +7,13 @@ layout(push_constant) uniform PushConstants {
 layout(location = 0) in vec3 in_vertex;
 layout(location = 1) in vec3 in_normal;
 layout(location = 2) in vec2 in_UV;
-layout(location = 3) in vec3 in_color;
+layout(location = 3) in vec4 in_color;
 
 layout(location = 0) out vec3 v_pos_vs;
 layout(location = 1) out vec3 v_view_dir_vs;
 layout(location = 2) out vec3 v_normal_vs;
 layout(location = 3) out vec2 v_UV;
-layout(location = 4) out vec3 v_color;
+layout(location = 4) out vec4 v_color;
 
 void main()
 {
